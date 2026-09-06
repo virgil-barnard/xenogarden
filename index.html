@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111e25">
+<meta name="description" content="Sculpt a living alien terrarium. Explore procedural caves, seed neural creatures, and discover what evolves.">
+<title>Xenogarden — a living world</title>
+<style>
+/* UI · the world owns the screen; the instruments stay at its edges. */
+:root{color-scheme:dark;--ink:#f1eed8;--muted:#abc1b9;--panel:#101f28f2;--line:#59786d66;--gold:#edc57c;--mint:#9fe5b3;--violet:#c4b4ff}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101b24;color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-size:14px}button,input,select{font:inherit}button,select,input[type=text]{border:1px solid var(--line);background:#1c3039;color:var(--ink);border-radius:8px}button{cursor:pointer;min-height:40px;padding:8px 12px;transition:background .15s,transform .15s}button:hover{background:#304942}button:active{transform:translateY(1px)}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:3px}button:disabled{opacity:.45;cursor:default}button[aria-pressed=true],button.selected{background:#476250;border-color:#a9d299;color:#fff6d6}input[type=range]{width:100%;accent-color:var(--mint)}input[type=text]{padding:10px;min-width:0;width:100%}select{padding:9px;min-width:0}canvas#world{display:block;position:absolute;inset:0;width:100%;height:100%;touch-action:none;image-rendering:pixelated}button svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}.glass{background:var(--panel);border:1px solid var(--line);box-shadow:0 8px 26px #0003;backdrop-filter:blur(14px)}.topbar{position:absolute;top:18px;left:20px;right:20px;display:flex;align-items:center;gap:12px;pointer-events:none;z-index:3}.topbar>*{pointer-events:auto}.brand{padding:10px 18px;border-radius:14px;display:flex;gap:13px;align-items:center}.brand-mark{color:var(--mint);font-size:25px}.brand strong{font-family:Georgia,serif;font-size:23px;font-weight:400;letter-spacing:.04em}.brand small{display:block;color:var(--muted);font-size:12px;letter-spacing:.08em;margin-top:1px}.world-chip{padding:10px 15px;border-radius:12px;display:flex;gap:18px;align-items:center}.world-chip span{display:block;font-size:12px;color:var(--muted);margin-bottom:2px}.world-chip b{font-weight:500;font-variant-numeric:tabular-nums}.top-actions{margin-left:auto;display:flex;gap:6px;border-radius:12px;padding:5px}.top-actions button{background:transparent;border-color:transparent}.currency{color:var(--gold);white-space:nowrap}.left-rail{position:absolute;left:20px;top:113px;display:grid;gap:12px;z-index:2;width:220px}.mission{padding:17px;border-radius:12px}.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:11px;color:var(--gold);font-weight:600}.mission h2{font-family:Georgia,serif;font-size:22px;font-weight:400;margin:9px 0 7px}.mission p{font-size:13px;line-height:1.5;color:var(--muted);margin:0 0 12px}.track{background:#ffffff0e;border-radius:4px;height:5px;overflow:hidden}.track i{display:block;background:var(--mint);height:100%;transition:width .4s}.mission-foot{display:flex;justify-content:space-between;font-size:12px;margin-top:8px;color:var(--muted)}.mission-foot strong{font-weight:500;color:var(--gold)}.journal-open{border-color:#74907677;background:#20302be6;width:100%;font-size:13px}.side-buttons{display:flex;gap:7px}.side-buttons button{flex:1;font-size:13px}.bottom{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);z-index:3;display:flex;flex-direction:column;align-items:center;gap:8px;max-width:calc(100% - 32px)}.tool-hint{background:#101d25df;border:1px solid #70887744;color:#d6e3d6;padding:6px 13px;border-radius:20px;font-size:12px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}.toolbar{border-radius:16px;padding:7px;display:flex;gap:5px;max-width:100%;overflow-x:auto}.tool{display:flex;min-width:62px;flex-direction:column;gap:4px;align-items:center;padding:8px 10px;position:relative;background:transparent;border-color:transparent}.tool .sym{height:23px;font-size:20px;color:var(--mint)}.tool span:last-child{font-size:12px}.tool kbd{position:absolute;top:2px;right:4px;color:var(--muted);font:9px ui-monospace,monospace}.tool[aria-pressed=true] .sym{color:#fff1b9}.mini{position:absolute;bottom:20px;right:20px;width:180px;padding:8px;border-radius:12px;z-index:2}.mini canvas{width:100%;height:auto;display:block;image-rendering:pixelated;border-radius:5px;cursor:crosshair}.mini-head{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);margin-bottom:5px}.mini-head button{padding:2px 7px;min-height:25px;font-size:12px;background:transparent}.status{position:absolute;bottom:25px;left:22px;max-width:240px;color:#ccdbc5;font-size:12px;z-index:2;line-height:1.7;text-shadow:0 1px 3px #000}.status .engine{font-size:11px;opacity:.6}.drawer{position:absolute;right:20px;top:104px;bottom:160px;width:330px;border-radius:14px;z-index:5;display:flex;flex-direction:column;overflow:hidden}.drawer[hidden],dialog:not([open]){display:none}.drawer-head{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}.drawer-head h2{font-family:Georgia,serif;font-size:23px;margin:0;font-weight:400}.drawer-head button{background:transparent;border:0;font-size:20px;min-height:30px;padding:2px 7px}.drawer-body{overflow:auto;padding:16px;scrollbar-color:#617964 #17272c;flex:1}.drawer-body p{font-size:13px;line-height:1.6;color:var(--muted)}.line{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0}.line label{font-size:13px}.line output{color:var(--gold);font-variant-numeric:tabular-nums}.species-row{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--line);border-radius:9px;margin:8px 0;background:#20323a;cursor:pointer}.species-row:hover{background:#2b433e}.species-row.active{border-color:var(--mint)}.species-portrait{width:38px;height:34px;image-rendering:pixelated;flex:none}.species-row b{font-size:14px;font-weight:500}.species-row small{display:block;color:var(--muted);font-size:12px;margin-top:3px}.species-count{margin-left:auto;color:var(--gold);font-variant-numeric:tabular-nums}.inspect-metrics{display:grid;grid-template-columns:1fr 1fr;gap:7px}.inspect-metrics div{background:#20313a;padding:10px;border-radius:8px}.inspect-metrics span{font-size:11px;display:block;color:var(--muted);margin-bottom:4px}.inspect-metrics b{font-weight:500}.separator{height:1px;background:var(--line);margin:18px 0}.brain{display:block;width:100%;height:130px;image-rendering:auto}.pair-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;margin:12px 0}.pair-grid button{border-radius:5px;min-height:35px;padding:4px;font:11px ui-monospace,monospace}.pair-grid button.selected{outline:2px solid var(--gold);outline-offset:1px}.matrix-key{display:flex;justify-content:space-between;color:var(--muted);font-size:12px}.compact{display:flex;gap:6px;flex-wrap:wrap}.compact button{font-size:12px;flex:1;white-space:nowrap}.quest-row{padding:12px 0;border-bottom:1px solid var(--line)}.quest-row b{font-size:14px;font-weight:500}.quest-row p{margin:5px 0 8px}.quest-row.completed b{color:var(--mint)}.event{font-size:12px;color:var(--muted);padding:8px 0;border-bottom:1px solid #ffffff09}.event b{color:var(--gold);font-weight:400}dialog{border:1px solid #6e887b;background:#142630;color:var(--ink);border-radius:18px;width:min(470px,calc(100% - 28px));padding:25px;max-height:90dvh;overflow:auto;box-shadow:0 30px 100px #0008}dialog::backdrop{background:#060d16b8;backdrop-filter:blur(5px)}dialog h2{font-family:Georgia,serif;font-size:31px;font-weight:400;margin:0 0 12px}dialog p{color:var(--muted);line-height:1.6;font-size:14px}.world-choices{display:grid;gap:8px;margin:15px 0}.world-choice{text-align:left;padding:13px 14px;display:block;width:100%}.world-choice b{display:block;color:var(--ink);margin-bottom:4px;font-weight:500}.world-choice small{font-size:12px;color:var(--muted)}.dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}.primary{background:#72946b;color:#0e201a;border-color:#b4d69b;font-weight:600}.primary:hover{background:#91b182}.key-table{display:grid;grid-template-columns:100px 1fr;gap:10px;font-size:13px;margin:15px 0}.key-table kbd{color:var(--gold);font-family:ui-monospace,monospace}.key-table span{color:var(--muted)}#toast{position:absolute;top:98px;left:50%;transform:translateX(-50%) translateY(-6px);background:#233a2ff5;border:1px solid #9cb587;color:#f1eed8;border-radius:11px;padding:12px 20px;z-index:20;max-width:calc(100% - 30px);text-align:center;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;font-size:14px}#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}#boot{position:absolute;inset:0;background:#12212b;z-index:30;display:grid;place-items:center}.boot-inner{text-align:center;padding:25px;max-width:500px}.boot-inner h1{font-family:Georgia,serif;font-size:48px;font-weight:400;letter-spacing:.04em;margin:0 0 14px;color:#dbeec6}.boot-inner p{color:var(--muted);line-height:1.7}.loader{width:70px;height:3px;background:#31483c;margin:25px auto;overflow:hidden;border-radius:4px}.loader::after{content:'';display:block;background:var(--gold);height:100%;animation:loading 1s ease-in-out infinite;transform-origin:left}@keyframes loading{0%{transform:scaleX(.05)}50%{transform:scaleX(1)}100%{transform:scaleX(.05)}}.quiet-ui .left-rail,.quiet-ui .mini,.quiet-ui .status,.quiet-ui .bottom,.quiet-ui .world-chip{display:none}.quiet-ui .brand{opacity:.6}.quiet-ui .top-actions{opacity:.4}.quiet-ui .top-actions:hover{opacity:1}@media(max-width:1100px){.mini{width:130px;bottom:120px}.status{bottom:125px}.world-chip{gap:12px}.brand small{display:none}.brand{padding:12px 15px}.left-rail{width:190px}.drawer{width:300px}.world-chip .hide-small{display:none}}@media(max-width:720px){.topbar{left:10px;right:10px;top:10px;gap:6px;flex-wrap:wrap}.brand{padding:8px 12px;gap:8px;border-radius:10px}.brand strong{font-size:19px}.brand-mark{font-size:21px}.top-actions{gap:0;padding:3px}.top-actions button{padding:6px 8px;min-height:36px}.top-actions .desktop-label{display:none}.world-chip{order:3;padding:7px 11px;border-radius:8px;font-size:12px;gap:13px}.world-chip span{font-size:10px;display:inline;margin-right:4px}.world-chip .hide-small{display:none}.left-rail{top:112px;left:10px;width:171px}.mission{padding:12px}.mission h2{font-size:19px;margin:6px 0}.mission p{font-size:12px;margin-bottom:8px}.mission .eyebrow{font-size:10px}.mission-foot{font-size:11px}.left-rail .side-buttons{display:none}.journal-open{min-height:34px;padding:6px}.bottom{bottom:12px;max-width:calc(100% - 12px)}.toolbar{gap:1px;padding:5px;border-radius:12px}.tool{min-width:46px;padding:7px 6px}.tool .sym{font-size:18px}.tool span:last-child{font-size:10px}.tool kbd{display:none}.tool-hint{font-size:11px;max-width:95vw}.mini{right:10px;bottom:116px;width:103px;padding:5px}.status{left:12px;bottom:118px;font-size:11px;max-width:210px}.drawer{inset:105px 10px 104px auto;width:min(330px,calc(100% - 20px));z-index:10}.drawer-body{padding:13px}#toast{top:108px;font-size:13px}.currency{font-size:12px}.mission p{max-height:52px;overflow:hidden}}@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<canvas id="world" aria-label="Interactive alien terrarium. Drag to move, scroll to zoom, or select a building tool." tabindex="0"></canvas>
+<header class="topbar">
+ <div class="brand glass"><span class="brand-mark" aria-hidden="true">✺</span><div><strong>Xenogarden</strong><small>A LITTLE WORLD, STILL BECOMING</small></div></div>
+ <div class="world-chip glass"><div><span>Habitat</span><b id="habitat-name">Verdant hollow</b></div><div><span>Day</span><b id="day">1</b></div><div class="hide-small"><span>Living</span><b id="alive">0</b></div><b class="currency" id="essence">✦ 120</b></div>
+ <nav class="top-actions glass" aria-label="World controls"><button id="pause" title="Pause · Space" aria-label="Pause">Ⅱ</button><button id="speed" title="Simulation speed">1×</button><button id="lab-btn" title="Species and evolution">⌬ <span class="desktop-label">Life</span></button><button id="world-btn" title="World, saves, and settings">☷ <span class="desktop-label">World</span></button><button id="help-btn" aria-label="How to play">?</button></nav>
+</header>
+<aside class="left-rail"><section class="mission glass"><div class="eyebrow">Field discovery <span id="quest-num">01</span></div><h2 id="quest-title">A place to grow</h2><p id="quest-desc">Plant three patches of moss. Give your creatures somewhere to gather.</p><div class="track"><i id="quest-bar" style="width:0%"></i></div><div class="mission-foot"><span id="quest-progress">0 / 3</span><strong id="quest-reward">+60 ✦</strong></div></section><button class="journal-open glass" id="journal-btn">▤ Field journal <span id="discovery-count">0 / 8</span></button><div class="side-buttons"><button class="glass" id="weather-btn">☂ Rainfall</button><button class="glass" id="view-btn">◉ Hide UI</button></div></aside>
+<div class="bottom"><div class="tool-hint" id="tool-hint">Drag to explore · scroll to zoom · click a creature to inspect</div><nav class="toolbar glass" aria-label="Habitat tools" id="tools"></nav></div>
+<section class="mini glass"><div class="mini-head"><span>Atlas</span><button id="fit-btn" title="Fit the whole world · F">⤢</button></div><canvas id="minimap" width="192" height="104" aria-label="World map. Click to move the camera."></canvas></section>
+<div class="status"><span id="season">Morning light · calm</span><br><span class="engine" id="engine">Preparing habitat…</span></div>
+<aside class="drawer glass" id="drawer" hidden><div class="drawer-head"><h2 id="drawer-title">Life in the hollow</h2><button id="drawer-close" aria-label="Close panel">×</button></div><div class="drawer-body" id="drawer-content"></div></aside>
+<dialog id="world-dialog"><h2>A world from a seed.</h2><p>Choose a landscape. Its caves, pools, and vegetation will grow from the same seed every time.</p><div class="world-choices" id="world-choices"></div><label for="seed">World seed</label><input id="seed" type="text" value="moss-and-moonlight" maxlength="80"><p id="new-world-note">Starting a new world replaces the current terrarium. Save it from the World panel if you want to return.</p><div class="dialog-actions"><button id="world-cancel">Keep exploring</button><button id="world-create" class="primary">Grow this world</button></div></dialog>
+<dialog id="help"><h2>Be a little curious.</h2><p>Sculpt passages, grow food, bring the rain, and introduce creatures. Each carries a small recurrent neural controller and inherited traits. Their offspring vary. See what finds a way to live.</p><div class="key-table"><kbd>Drag / WASD</kbd><span>Explore the world</span><kbd>Scroll / pinch</kbd><span>Zoom in to meet its inhabitants</span><kbd>1–8</kbd><span>Select a habitat tool</span><kbd>Space / F</kbd><span>Pause / fit the world</span><kbd>H / Esc</kbd><span>Hide UI / close a panel</span></div><p>Discoveries earn ✦ growth. Free build removes tool costs. The Life panel lets you inspect families and change their attraction or repulsion.</p><div class="dialog-actions"><button id="help-close" class="primary">Back to the garden</button></div></dialog>
+<input type="file" id="load-file" accept="application/json,.json" hidden>
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="boot"><div class="boot-inner"><h1>Xenogarden</h1><div class="loader"></div><p id="boot-status">Carving the hollow. Finding a little light.</p></div></div>
+<script>
+'use strict';
+/* CORE_BEGIN */
+// Deterministic terrain and simulation state. No UI dependencies in this section.
+const CFG=Object.freeze({tile:8,cols:240,rows:128,width:1920,height:1024,stride:32,inputs:16,hidden:8,outputs:4,brainStride:236,families:6,bin:32,binCols:60,binRows:32,step:.08,saveVersion:1});
+const CELLS=CFG.cols*CFG.rows,BINS=CFG.binCols*CFG.binRows,TAU=Math.PI*2;
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),lerp=(a,b,t)=>a+(b-a)*t;
+const FAMILIES=[
+ {name:'Mossling',color:'#a6dc78',dark:'#477d51',habitat:'Damp roots & forest floors',kind:0},
+ {name:'Emberwing',color:'#efb46c',dark:'#a45845',habitat:'Sunlit clearings & canopies',kind:1},
+ {name:'Tidefin',color:'#79d8d2',dark:'#3c798f',habitat:'Pools & submerged passages',kind:2},
+ {name:'Sporekin',color:'#bc9aeb',dark:'#72559d',habitat:'Fungal grottos & deep shade',kind:1},
+ {name:'Pebbleback',color:'#dab87a',dark:'#7b6852',habitat:'Stone ledges & cave floors',kind:0},
+ {name:'Moonmoth',color:'#e2dcc6',dark:'#7f9a9b',habitat:'Cool air & twilight gardens',kind:1}
+];
+const BIOMES={
+ hollow:{name:'Verdant hollow',description:'Ancient trees, sunlit pools, and a luminous underworld.',sky:['#172d42','#769c8c'],rock:['#344449','#3d514e','#29343e'],soil:['#675c45','#766447'],grass:'#92b96b',leaf:['#537d62','#65986c','#7ea776'],water:'#3c858e',cave:'#141f2e'},
+ amber:{name:'Amber sanctuary',description:'Warm mesas, hanging roots, and hidden oasis caverns.',sky:['#41334b','#c99870'],rock:['#735b58','#80634f','#574859'],soil:['#a17d56','#b88a5c'],grass:'#b9bb76',leaf:['#839369','#a1ac74','#bec18a'],water:'#589a9a',cave:'#28243b'},
+ lunar:{name:'Moonwater basin',description:'Silver woodlands above violet caves and tidal lagoons.',sky:['#101d38','#596f8b'],rock:['#414458','#4a4d65','#2d344e'],soil:['#686879','#797d87'],grass:'#a2c4b7',leaf:['#73929e','#8babac','#a6c6be'],water:'#426ca6',cave:'#151c36'}
+};
+function hash32(a){a=Math.imul(a^(a>>>16),0x7feb352d);a=Math.imul(a^(a>>>15),0x846ca68b);return(a^(a>>>16))>>>0;}
+function seedHash(s){let h=2166136261;for(let i=0;i<s.length;i++)h=Math.imul(h^s.charCodeAt(i),16777619);return h>>>0;}
+function rng(seed){let s=seed>>>0;return()=>{s+=0x6d2b79f5;let t=s;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
+function noise2(x,y,seed){let ix=Math.floor(x),iy=Math.floor(y),fx=x-ix,fy=y-iy;fx=fx*fx*(3-2*fx);fy=fy*fy*(3-2*fy);const h=(xx,yy)=>hash32(seed^Math.imul(xx,374761393)^Math.imul(yy,668265263))/4294967295;return lerp(lerp(h(ix,iy),h(ix+1,iy),fx),lerp(h(ix,iy+1),h(ix+1,iy+1),fx),fy);}
+function fbm(x,y,s){return noise2(x,y,s)*.58+noise2(x*2,y*2,s+19)*.28+noise2(x*4,y*4,s+37)*.14;}
+function tileIndex(x,y){return clamp(Math.floor(y/8),0,127)*240+clamp(Math.floor(x/8),0,239);}
+function makeWorld(seed='moss-and-moonlight',biome='hollow'){
+ if(!BIOMES[biome])biome='hollow';const sd=seedHash(seed),rnd=rng(sd);
+ const w={seed,biome,tiles:new Uint8Array(CELLS),water:new Float32Array(CELLS),food:new Int32Array(CELLS),cap:new Float32Array(CELLS),light:new Float32Array(CELLS),moist:new Float32Array(CELLS),surface:new Int16Array(240),plants:[],trees:[],crystals:[],springs:[],reservoirs:[],backgroundSeed:sd};
+ for(let x=0;x<240;x++){
+  const h=Math.round(40+Math.sin(x*.038)*8+Math.sin(x*.112+1)*3+(noise2(x*.025,0,sd)-.5)*16+(biome==='amber'?4:0));w.surface[x]=h;
+  for(let y=0;y<128;y++){
+   let v=y>=h?(y<h+5?1:2):0;
+   if(y>h+7&&y<125&&fbm(x*.035,y*.072,sd+121)>.555)v=0;
+   w.tiles[y*240+x]=v;
+  }
+ }
+ function carve(cx,cy,rx,ry){for(let y=Math.max(2,Math.floor(cy-ry-1));y<Math.min(126,cy+ry+1);y++)for(let x=Math.max(2,Math.floor(cx-rx-1));x<Math.min(238,cx+rx+1);x++){let edge=1+(noise2(x*.23,y*.23,sd)-.5)*.21;if(((x-cx)/rx)**2+((y-cy)/ry)**2<edge)w.tiles[y*240+x]=0;}}
+ const chambers=[];
+ for(let j=0;j<7;j++){const x=16+j*34+rnd()*5,y=69+Math.sin(j*1.7)*12+rnd()*9;chambers.push([x,y]);carve(x,y,14+rnd()*7,10+rnd()*6);if(j){const p=chambers[j-1];for(let t=0;t<=1;t+=.07)carve(lerp(p[0],x,t),lerp(p[1],y,t)+Math.sin(t*Math.PI)*5,4.5,4);}}
+ for(const j of [1,4]){const c=chambers[j],top=w.surface[Math.floor(c[0])]-3;for(let y=top;y<c[1];y+=2)carve(c[0]+Math.sin(y*.12)*3,y,4.5,4);}
+ for(let j=0;j<4;j++){const x=29+j*57,y=106+Math.sin(j*2)*5;carve(x,y,17,10);const p=chambers[Math.min(6,j*2)];for(let t=0;t<=1;t+=.06)carve(lerp(p[0],x,t),lerp(p[1],y,t),3,3);}
+ // Carved basins have a closed bottom and a finite initial water volume.
+ for(const x of [48,128,204]){const h=w.surface[x];carve(x,h-1,12,7);w.reservoirs.push({x:x*8,y:(h+1)*8,rx:12*8});for(let yy=h;yy<h+8;yy++)for(let xx=x-12;xx<=x+12;xx++){const i=yy*240+xx;if(!w.tiles[i]&&xx>0&&xx<239)w.water[i]=1;}}
+ for(const j of [0,3,6]){const c=chambers[j];for(let y=Math.floor(c[1]+4);y<Math.min(126,c[1]+14);y++)for(let x=Math.floor(c[0]-16);x<c[0]+16;x++){if(x<1||x>238)continue;const i=y*240+x;if(!w.tiles[i])w.water[i]=1;}}
+ for(let x=0;x<240;x++){w.tiles[126*240+x]=2;w.tiles[127*240+x]=2;}for(let y=0;y<128;y++){w.tiles[y*240]=2;w.tiles[y*240+239]=2;}
+ for(let x=12;x<232;x+=10+Math.floor(rnd()*13)){
+  const y=w.surface[x];if(w.tiles[y*240+x]&&w.water[(y-1)*240+x]<.1){w.trees.push({x:x*8+4,y:y*8,height:80+rnd()*100,width:37+rnd()*35,seed:Math.floor(rnd()*1e6),lean:(rnd()-.5)*20});}
+ }
+ for(let y=20;y<124;y++)for(let x=3;x<237;x++){
+  const i=y*240+x;if(w.tiles[i]||!w.tiles[i+240])continue;
+  const deep=y>w.surface[x]+7,prob=deep?.27:.61;if(rnd()>prob)continue;
+  w.plants.push({x:x*8+4,y:(y+1)*8,type:deep?(rnd()<.33?'crystal':'mushroom'):(rnd()<.23?'flower':'fern'),size:deep?10+rnd()*18:8+rnd()*20,seed:Math.floor(rnd()*1e6),planted:false});
+ }
+ // Deliberately readable landmarks, each attached to actual cave substrate.
+ for(let j=0;j<chambers.length;j++){const c=chambers[j];let y=Math.floor(c[1]);while(y<124&&!w.tiles[(y+1)*240+Math.floor(c[0])])y++;w.plants.push({x:c[0]*8,y:(y+1)*8,type:'mushroom',size:34+rnd()*15,seed:j*741+sd,planted:false});}
+ rebuildFields(w,true);settleWater(w,36);rebuildFields(w,false);return w;
+}
+function rebuildFields(w,initial=false){
+ w.cap.fill(0);w.light.fill(0);w.moist.fill(.1);
+ for(let x=0;x<240;x++){let l=1;for(let y=0;y<128;y++){const i=y*240+x;if(w.tiles[i])l*=.27;else l=Math.max(l,.015);w.light[i]=l;w.moist[i]=clamp(.1+w.water[i]*.75+(1-l)*.1,0,1);}}
+ for(const p of w.plants){
+  const cx=Math.floor(p.x/8),cy=Math.floor(p.y/8)-1,rr=p.type==='crystal'?5:4;
+  for(let y=Math.max(0,cy-rr);y<=Math.min(127,cy+1);y++)for(let x=Math.max(0,cx-rr);x<=Math.min(239,cx+rr);x++){
+   const i=y*240+x,d=Math.hypot(x-cx,y-cy);if(w.tiles[i]||d>rr)continue;
+   const power=(1-d/(rr+1));w.cap[i]+=power*(p.type==='crystal'?1800:3600);w.moist[i]=Math.max(w.moist[i],.32+power*.2);if(p.type==='crystal'||p.type==='mushroom')w.light[i]=Math.max(w.light[i],power*.16);
+  }
+ }
+ for(let i=0;i<CELLS;i++){
+  if(w.tiles[i]){w.cap[i]=0;w.food[i]=0;continue;}
+  if(w.water[i]>.15)w.cap[i]+=500+w.water[i]*1300;
+  w.cap[i]=Math.min(12000,w.cap[i]);if(initial)w.food[i]=Math.floor(w.cap[i]*.85);else w.food[i]=Math.min(w.food[i],Math.ceil(Math.max(1500,w.cap[i])));
+ }
+}
+function settleWater(w,iterations=1){
+ for(let k=0;k<iterations;k++){
+  const reverse=k%2===0;for(let y=125;y>1;y--)for(let z=1;z<239;z++){
+   const x=reverse?z:239-z,i=y*240+x;if(w.tiles[i]||w.water[i]<.005)continue;
+   const j=i+240;if(!w.tiles[j]){const d=Math.min(w.water[i],Math.max(0,1-w.water[j]));w.water[i]-=d;w.water[j]+=d;}
+   for(const dx of reverse?[-1,1]:[1,-1]){const j=i+dx;if(w.tiles[j])continue;const d=Math.max(0,(w.water[i]-w.water[j])*.22);w.water[i]-=d;w.water[j]+=d;}
+  }
+ }
+}
+function worldGPUData(w){const a=new Float32Array(CELLS*4);for(let i=0;i<CELLS;i++){a[i*4]=w.tiles[i]?1:0;a[i*4+1]=w.water[i];a[i*4+2]=w.cap[i];a[i*4+3]=w.light[i];}return a;}
+function createBrains(seed){const a=new Float32Array(6*236),r=rng(seedHash(seed)+71);for(let sp=0;sp<6;sp++){
+  const o=sp*236;for(let j=0;j<236;j++)a[o+j]=(r()-.5)*.3;
+  // Gentle local foraging priors. Evolution modulates these weights through inherited genes.
+  a[o+0*16+0]=2.0;a[o+1*16+1]=2.0;a[o+2*16+10]=1.5;a[o+3*16+11]=1.5;a[o+4*16+4]=.9;a[o+5*16+5]=.9;a[o+6*16+12]=.9;a[o+7*16+13]=.9;
+  for(let h=0;h<8;h++)a[o+128+h*8+h]=.48;
+  a[o+200+0]=2.2;a[o+200+2]=1.6;a[o+200+8+1]=2.2;a[o+200+8+3]=1.6;a[o+200+16+4]=.35;a[o+200+24+5]=.4;
+  if(sp===2)a[o+192+3]=-.1;
+ }return a;}
+function createMatrix(preset='gentle'){const m=new Float32Array(36);for(let a=0;a<6;a++)for(let b=0;b<6;b++){m[a*6+b]=preset==='neutral'?0:preset==='clans'?(a===b?.8:-.22):preset==='chase'?(b===(a+1)%6?.8:b===(a+5)%6?-.7:.05):(a===b?.25:.04);}return m;}
+function spawnState(w,capacity=2048){
+ const a=new Float32Array(capacity*32),r=rng(seedHash(w.seed)+845);
+ const wet=[],ground=[],air=[],deep=[];
+ for(let y=5;y<125;y++)for(let x=2;x<238;x++){let i=y*240+x;if(w.tiles[i])continue;if(w.water[i]>.4)wet.push(i);if(w.tiles[i+240]&&w.cap[i]>100)ground.push(i);if(w.cap[i]>80){air.push(i);if(y>w.surface[x]+5)deep.push(i);}}
+ const live=Math.min(Math.floor(capacity*.48),650);
+ for(let n=0;n<capacity;n++){
+  const o=n*32,sp=n%6,list=sp===2?wet:sp===0||sp===4?ground:sp===3?deep:air;const choices=list.length?list:air;
+  const i=choices[Math.floor(r()*choices.length)]??tileIndex(800,160);a[o]=(i%240+.5)*8;a[o+1]=(Math.floor(i/240)+.35)*8;a[o+2]=(r()-.5)*8;a[o+3]=(r()-.5)*3;
+  a[o+4]=n<live?1.1+r()*.5:0;a[o+5]=r()*6;a[o+6]=sp;a[o+7]=0;
+  for(let j=0;j<16;j++)a[o+16+j]=(r()-.5)*.7;
+ }return a;
+}
+function genesFor(a,o){return Array.from(a.subarray(o+16,o+32));}
+function aggregate(a){
+ const stats=FAMILIES.map((_,i)=>({i,count:0,energy:0,generation:0,deep:0,genes:new Float32Array(16)}));let count=0,highest=0;
+ for(let o=0;o<a.length;o+=32){if(a[o+4]<=0)continue;const s=stats[clamp(Math.round(a[o+6]),0,5)];s.count++;count++;s.energy+=a[o+4];s.generation=Math.max(s.generation,a[o+7]);highest=Math.max(highest,a[o+7]);if(a[o+1]>480)s.deep++;for(let j=0;j<16;j++)s.genes[j]+=a[o+16+j];}
+ for(const s of stats)if(s.count){s.energy/=s.count;for(let j=0;j<16;j++)s.genes[j]/=s.count;}return{stats,count,highest};
+}
+function baseStats(){return{dug:0,planted:0,cavePlants:0,seeded:0,rain:0,births:0,deaths:0,seconds:0,storms:0,crystals:0,visitedDepth:0};}
+const QUESTS=[
+ {id:'garden',title:'A place to grow',desc:'Plant three patches of moss. Give your creatures somewhere to gather.',goal:3,reward:60,value:g=>g.planted},
+ {id:'passage',title:'Between two worlds',desc:'Dig 24 tiles. Connect a clearing to the caves below.',goal:24,reward:80,value:g=>g.dug},
+ {id:'offspring',title:'Life finds a way',desc:'Watch ten offspring arrive. Their traits inherit small variations.',goal:10,reward:100,value:g=>g.births},
+ {id:'understory',title:'The quiet understory',desc:'Plant five patches below the surface. Make a home in the dark.',goal:5,reward:90,value:g=>g.cavePlants},
+ {id:'rain',title:'After the rain',desc:'Bring three rainfalls to the garden. Water replenishes its food.',goal:3,reward:70,value:g=>g.rain},
+ {id:'lineage',title:'Something of their own',desc:'Keep a lineage alive through four generations.',goal:4,reward:150,value:(g,s)=>s.highest},
+ {id:'light',title:'A little starlight',desc:'Place three glow gardens to support life underground.',goal:3,reward:100,value:g=>g.crystals},
+ {id:'ecosystem',title:'A world still becoming',desc:'Raise 150 offspring in this habitat.',goal:150,reward:220,value:g=>g.births}
+];
+function mutateGenes(a,parent,child,rate,seed){for(let j=0;j<16;j++){const h=hash32(seed+j*7919),u=h/4294967295,noise=hash32(h+91)/4294967295-.5;a[child+16+j]=clamp(a[parent+16+j]+(u<.22?noise*rate*3:0),-1.5,1.5);}}
+function inferBrain(brains,sp,inputs,prev,genes){const base=sp*236,h=new Float32Array(8),out=new Float32Array(4);for(let j=0;j<8;j++){let v=brains[base+192+j]+genes[4+j]*.32;for(let k=0;k<16;k++)v+=inputs[k]*brains[base+j*16+k]*(1+genes[4+(j*16+k)%12]*.6);for(let k=0;k<8;k++)v+=prev[k]*brains[base+128+j*8+k]*(1+genes[4+(j+k)%12]*.35);h[j]=Math.tanh(v);}for(let j=0;j<4;j++){let v=brains[base+232+j];for(let k=0;k<8;k++)v+=h[k]*brains[base+200+j*8+k]*(1+genes[4+(j*8+k)%12]*.6);out[j]=Math.tanh(v);}return{h,out};}
+function validateSave(d){
+ if(!d||d.format!=='xenogarden'||d.version!==1)throw Error('This is not a Xenogarden save.');
+ if(!d.world||!BIOMES[d.world.biome]||typeof d.world.seed!=='string'||d.world.seed.length>80)throw Error('The saved habitat is incomplete.');
+ const finiteArray=(a,n,lo,hi)=>Array.isArray(a)&&a.length===n&&a.every(x=>Number.isFinite(x)&&x>=lo&&x<=hi);
+ if(!Number.isInteger(d.capacity)||d.capacity<128||d.capacity>8192)throw Error('Invalid population capacity.');
+ if(!finiteArray(d.particles,d.capacity*32,-10000,10000000)||!finiteArray(d.world.tiles,CELLS,0,3)||!finiteArray(d.world.water,CELLS,0,1.01)||!finiteArray(d.world.food,CELLS,0,100000)||!finiteArray(d.matrix,36,-2,2)||!finiteArray(d.brains,1416,-10,10))throw Error('The saved simulation contains invalid or missing values.');
+ if(!Array.isArray(d.world.plants)||d.world.plants.length>5000||!Array.isArray(d.world.trees)||d.world.trees.length>200)throw Error('Invalid habitat structures.');
+ for(const p of d.world.plants){if(!p||!['mushroom','crystal','fern','flower'].includes(p.type)||!Number.isFinite(p.x)||p.x<0||p.x>1920||!Number.isFinite(p.y)||p.y<0||p.y>1024||!Number.isFinite(p.size)||p.size<1||p.size>200||!Number.isFinite(p.seed))throw Error('Invalid plant.');}
+ for(const t of d.world.trees){if(!t||![t.x,t.y,t.height,t.width,t.seed,t.lean].every(Number.isFinite)||t.x<0||t.x>1920||t.y<0||t.y>1024||t.height<1||t.height>300||t.width<1||t.width>150||Math.abs(t.lean)>100)throw Error('Invalid tree.');}
+ for(let o=0;o<d.particles.length;o+=32){const p=d.particles;if(p[o]<0||p[o]>1920||p[o+1]<0||p[o+1]>1024||Math.abs(p[o+2])>35||Math.abs(p[o+3])>35||p[o+4]<0||p[o+4]>2.5||p[o+5]<0||p[o+6]<0||p[o+6]>5||!Number.isInteger(p[o+6])||p[o+7]<0||!Number.isInteger(p[o+7]))throw Error('Invalid creature.');for(let j=8;j<32;j++)if(Math.abs(p[o+j])>(j<16?1.001:1.501))throw Error('Invalid inherited state.');}
+ return d;
+}
+/* CORE_END */
+/* SHADERS_BEGIN */
+// Four ordered GPU passes: reset, local bins, behavior/uptake, birth settlement.
+// Each parent can fund at most one child per step. Genome state belongs to individuals.
+const GPU_SOURCE=String.raw`
+struct Creature { pos:vec4<f32>, life:vec4<f32>, memory:array<vec4<f32>,2>, genes:array<vec4<f32>,4> }
+struct Params { a:vec4<f32>, b:vec4<f32>, c:vec4<f32>, d:vec4<f32> }
+@group(0) @binding(0) var<storage,read> src:array<Creature>;
+@group(0) @binding(1) var<storage,read_write> dst:array<Creature>;
+@group(0) @binding(2) var<storage,read> terrain:array<vec4<f32>>;
+@group(0) @binding(3) var<storage,read_write> food:array<atomic<i32>>;
+@group(0) @binding(4) var<storage,read> brains:array<f32>;
+@group(0) @binding(5) var<storage,read> matrix:array<f32>;
+@group(0) @binding(6) var<storage,read_write> grid:array<atomic<i32>>;
+@group(0) @binding(7) var<uniform> u:Params;
+const C:u32=30720u;const B:u32=1920u;
+fn hash(x:u32)->u32{var a=x;a=(a^(a>>16u))*0x7feb352du;a=(a^(a>>15u))*0x846ca68bu;return a^(a>>16u);}
+fn rnd(x:u32)->f32{return f32(hash(x))/4294967295.0;}
+fn idx(p:vec2<f32>)->u32{let q=clamp(vec2<i32>(floor(p/8.0)),vec2<i32>(0),vec2<i32>(239,127));return u32(q.y*240+q.x);}
+fn bin(p:vec2<f32>)->u32{let q=clamp(vec2<i32>(floor(p/32.0)),vec2<i32>(0),vec2<i32>(59,31));return u32(q.y*60+q.x);}
+fn norm(v:vec2<f32>)->vec2<f32>{return v/max(0.001,length(v));}
+fn gene(p:Creature,j:u32)->f32{return p.genes[j/4u][j%4u];}
+fn foodAt(p:vec2<f32>)->f32{return f32(max(0,atomicLoad(&food[idx(p)])))/6000.0;}
+fn solid(p:vec2<f32>)->f32{return terrain[idx(p)].x;}
+@compute @workgroup_size(128)
+fn reset(@builtin(global_invocation_id) id:vec3<u32>){let i=id.x;let n=u32(u.a.y);if(i<B){atomicStore(&grid[i],-1);}if(i<n){atomicStore(&grid[B+n+i],-1);}if(i<C){let t=terrain[i];if(t.x>.5){atomicStore(&food[i],0);}else{let cap=i32(t.z);let amount=atomicLoad(&food[i]);let light=max(.12,t.w*u.b.x);let growth=i32((2.0+light*5.0+t.y*3.0)*(1.0+u.b.y*.9)*u.b.z);if(amount<cap&&cap>0){atomicAdd(&food[i],min(growth,cap-amount));}}}}
+@compute @workgroup_size(128)
+fn bins(@builtin(global_invocation_id) id:vec3<u32>){let i=id.x;if(i>=u32(u.a.y)){return;}let p=src[i];if(p.life.x<=0.0){return;}let old=atomicExchange(&grid[bin(p.pos.xy)],i32(i));atomicStore(&grid[B+i],old);}
+@compute @workgroup_size(128)
+fn step(@builtin(global_invocation_id) id:vec3<u32>){
+ let i=id.x;let n=u32(u.a.y);if(i>=n){return;}var p=src[i];let tick=u32(u.a.z);let dt=u.a.x;
+ if(p.life.x<=0.0){
+  dst[i]=p;
+  if(rnd(i*73u+tick*379u)>.18){return;}
+  for(var k=0u;k<12u;k++){
+   let j=hash(i*1999u+tick*1237u+k*7919u)%n;let q=src[j];
+   if(q.life.x<1.5||q.life.y<5.0){continue;}
+   let offset=vec2<f32>((rnd(tick+i*17u+k)-.5)*15.0,-5.0-(rnd(i+tick*31u)*8.0));let birth=clamp(q.pos.xy+offset,vec2<f32>(9.0),vec2<f32>(1910.0,1005.0));if(solid(birth)>.5){continue;}
+   let claim=atomicCompareExchangeWeak(&grid[B+n+j],-1,i32(i));if(!claim.exchanged){continue;}
+   p=q;p.pos=vec4<f32>(birth,q.pos.zw*.3);p.life=vec4<f32>(0.0,0.0,q.life.z,q.life.w+1.0);
+   p.memory[0]=vec4<f32>(0.0);p.memory[1]=vec4<f32>(0.0);
+   for(var g=0u;g<16u;g++){let seed=i*1949u+j*811u+tick*379u+g*7919u;let delta=select(0.0,(rnd(seed+91u)-.5)*u.a.w*3.0,rnd(seed)<.22);p.genes[g/4u][g%4u]=clamp(gene(q,g)+delta,-1.5,1.5);}
+   dst[i]=p;return;
+  }return;
+ }
+ let sp=u32(p.life.z);let pos=p.pos.xy;let cell=idx(pos);let env=terrain[cell];
+ var social=vec2<f32>(0.0);var kin=0.0;var other=0.0;var neighbors=0.0;
+ let bxy=vec2<i32>(floor(pos/32.0));
+ for(var by=-1;by<=1;by++){for(var bx=-1;bx<=1;bx++){
+  let bb=bxy+vec2<i32>(bx,by);if(bb.x<0||bb.y<0||bb.x>=60||bb.y>=32){continue;}
+  var j=atomicLoad(&grid[u32(bb.y*60+bb.x)]);var seen=0u;
+  loop{if(j<0||seen>=24u){break;}seen++;let qi=u32(j);j=atomicLoad(&grid[B+qi]);if(qi==i){continue;}let q=src[qi];let delta=q.pos.xy-pos;let r=length(delta);if(r<.01||r>34.0){continue;}
+   // Four material samples prevent attraction through solid partitions.
+   if(solid(pos+delta*.25)+solid(pos+delta*.5)+solid(pos+delta*.75)>.5){continue;}
+   let qsp=u32(q.life.z);let fall=1.0-r/34.0;var affinity=matrix[sp*6u+qsp];
+   if(u.b.w>.5){affinity+=.22*(gene(p,2)*gene(q,3)+gene(p,14)*gene(q,15));}
+   let force=select(affinity*fall*7.0,-(5.0-r)*12.0,r<5.0);social+=norm(delta)*force;neighbors+=fall;
+   if(qsp==sp){kin+=fall;}else{other+=fall;}
+  }
+ }}
+ social/=max(1.0,neighbors*.45);
+ let fg=vec2<f32>(foodAt(pos+vec2<f32>(12,0))-foodAt(pos-vec2<f32>(12,0)),foodAt(pos+vec2<f32>(0,12))-foodAt(pos-vec2<f32>(0,12)));
+ let walls=vec2<f32>(solid(pos-vec2<f32>(7,0))-solid(pos+vec2<f32>(7,0)),solid(pos-vec2<f32>(0,7))-solid(pos+vec2<f32>(0,7)));
+ let wetgrad=vec2<f32>(terrain[idx(pos+vec2<f32>(16,0))].y-terrain[idx(pos-vec2<f32>(16,0))].y,terrain[idx(pos+vec2<f32>(0,16))].y-terrain[idx(pos-vec2<f32>(0,16))].y);
+ var inputs:array<f32,16>;
+ inputs[0]=clamp(fg.x*2.0,-1.0,1.0);inputs[1]=clamp(fg.y*2.0,-1.0,1.0);inputs[2]=clamp(foodAt(pos),0.0,1.0);inputs[3]=env.y;
+ inputs[4]=p.life.x*.5;inputs[5]=env.w*u.b.x;inputs[6]=p.pos.z*.04;inputs[7]=p.pos.w*.04;inputs[8]=min(1.0,kin*.2);inputs[9]=min(1.0,other*.2);
+ inputs[10]=walls.x;inputs[11]=walls.y;inputs[12]=social.x*.1;inputs[13]=social.y*.1;inputs[14]=sin(u.c.x*.65+f32(i)*1.73);inputs[15]=rnd(i+tick*79u)*2.0-1.0;
+ let base=sp*236u;var hidden:array<f32,8>;var action:array<f32,4>;
+ for(var h=0u;h<8u;h++){var v=brains[base+192u+h]+gene(p,4u+h)*.32;for(var s=0u;s<16u;s++){v+=inputs[s]*brains[base+h*16u+s]*(1.0+gene(p,4u+(h*16u+s)%12u)*.6);}for(var k=0u;k<8u;k++){v+=p.memory[k/4u][k%4u]*brains[base+128u+h*8u+k]*(1.0+gene(p,4u+(h+k)%12u)*.35);}hidden[h]=tanh(v);}
+ for(var a=0u;a<4u;a++){var v=brains[base+232u+a];for(var h=0u;h<8u;h++){v+=hidden[h]*brains[base+200u+a*8u+h]*(1.0+gene(p,4u+(a*8u+h)%12u)*.6);}action[a]=tanh(v);}
+ let maxSpeed=14.0+gene(p,0)*3.0;let motor=vec2<f32>(action[0],action[1])*maxSpeed;var accel=motor+social*u.c.y*(.8+action[2]*.6)+walls*16.0;
+ let ground=sp==0u||sp==4u;let fish=sp==2u;
+ if(ground){accel.y+=23.0*(1.0-env.y*.8);if(solid(pos+vec2<f32>(0,6))>.5&&action[1]<.4){accel.y-=38.0*max(.2,abs(action[0]));}}
+ if(fish){accel+=wetgrad*16.0;if(env.y<.15){accel.y+=18.0;}}
+ if(!ground&&!fish){accel.y+=(.24-env.w)*2.5;}
+ accel.x+=sin(pos.y*.011+u.c.x*.17)*(env.y*2.0+u.b.y*.7);
+ let velocity=clamp((p.pos.zw+accel*dt)*exp(-dt*1.0),vec2<f32>(-34),vec2<f32>(34));p.pos.z=velocity.x;p.pos.w=velocity.y;
+ var next=clamp(pos+p.pos.zw*dt,vec2<f32>(10,16),vec2<f32>(1909,1005));
+ if(solid(vec2<f32>(next.x,pos.y))>.5){next.x=pos.x;p.pos.z*=-.35;}
+ if(solid(vec2<f32>(next.x,next.y))>.5){next.y=pos.y;p.pos.w*=-.25;}
+ if(solid(next)>.5){for(var k=1;k<=8;k++){let probe=next-vec2<f32>(0,f32(k)*8.0);if(solid(probe)<.5){next=probe;break;}}}
+ p.pos.x=next.x;p.pos.y=next.y;
+ let requested=i32(7.0+(action[3]+1.0)*2.0+max(0.0,gene(p,3))*2.0);
+ let old=atomicSub(&food[cell],requested);let actual=clamp(old,0,requested);if(actual<requested){atomicAdd(&food[cell],requested-actual);}
+ let gain=f32(actual)*.0026;let effort=dot(motor,motor)*.000015+length(social)*u.c.y*.00012;
+ let dry=select(0.0,.075,fish&&env.y<.1);let senescence=max(0.0,p.life.y-(95.0+gene(p,1)*22.0));let ageCost=senescence*senescence*.0025;
+ p.life.x=clamp(p.life.x+gain-dt*(.010+.002*abs(gene(p,0))+.003*abs(gene(p,1))+effort+dry+ageCost),0.0,2.4);p.life.y+=dt;
+ for(var h=0u;h<8u;h++){p.memory[h/4u][h%4u]=hidden[h];}
+ if(p.life.x<=0.0){atomicAdd(&food[idx(p.pos.xy)],210);atomicAdd(&grid[B+2u*n+1u],1);}
+ dst[i]=p;
+}
+@compute @workgroup_size(128)
+fn births(@builtin(global_invocation_id) id:vec3<u32>){let i=id.x;let n=u32(u.a.y);if(i>=n){return;}let child=atomicLoad(&grid[B+n+i]);if(child<0){return;}if(dst[i].life.x>1.2){dst[i].life.x-=.65;dst[u32(child)].life.x=.55;atomicAdd(&grid[B+2u*n],1);}else{dst[u32(child)].life.x=0.0;}}
+`;
+/* SHADERS_END */
+/* APP_BEGIN */
+const $=s=>document.querySelector(s),canvas=$('#world'),ctx=canvas.getContext('2d',{alpha:false}),mapCanvas=$('#minimap'),mapCtx=mapCanvas.getContext('2d');
+let world,engine,state,brains,matrix,summary={stats:[],count:0,highest:0},capacity=2048;
+let simTime=0,tick=0,speed=1,paused=false,busy=false,lastFrame=0,accum=0,snapshotTime=0,lastUI=0,lastEnv=0;
+let options={mutation:.13,force:1,affinities:false,autoSeason:true,freeBuild:false,fertility:1,showFood:false};
+let game=baseStats(),essence=120,completed=new Set(),journal=[],selectedFamily=0,selectedParticle=-1,drawerTab='',rainUntil=0,directorAt=35,weatherName='calm';
+let camera={x:960,y:512,zoom:1},screenW=innerWidth,screenH=innerHeight,renderScale=1,tool='hand',brush=3,hover=null;
+let terrainLayer,skyLayer,floraLayer,waterLayer,minimapDirty=true,terrainDirty=true,floraDirty=true,pendingBiome='hollow';
+let toastTimer,keys=new Set(),cameraMoved=false,mutating=false,saveSerial=0;
+const TOOLS=[{id:'hand',sym:'✥',name:'Explore',key:'1',hint:'Drag to explore · scroll to zoom · click a creature to inspect'},
+ {id:'dig',sym:'⛏',name:'Dig',key:'2',hint:'Carve a passage · drag across terrain · free'},
+ {id:'soil',sym:'▦',name:'Soil',key:'3',hint:'Build a ledge or close a passage · 1 ✦ per stroke'},
+ {id:'moss',sym:'♧',name:'Grow',key:'4',hint:'Plant a food patch on an open surface · 3 ✦'},
+ {id:'water',sym:'◈',name:'Water',key:'5',hint:'Pour water into an open space · 5 ✦'},
+ {id:'seed',sym:'❧',name:'Life',key:'6',hint:'Release the selected family here · 12 ✦'},
+ {id:'glow',sym:'✧',name:'Glow',key:'7',hint:'Grow a luminous food garden in the caves · 8 ✦'},
+ {id:'mutate',sym:'⌁',name:'Mutate',key:'8',hint:'Introduce variation to nearby creatures · 10 ✦'}];
+class GPUEcology{
+ async init(w,a,b,m){
+  const adapter=await navigator.gpu.requestAdapter({powerPreference:'high-performance'});if(!adapter)throw Error('No GPU adapter');
+  this.device=await adapter.requestDevice();this.queue=this.device.queue;this.n=a.length/32;this.bytes=a.byteLength;this.name='WebGPU';this.flip=0;this.epoch=0;this.errors=[];
+  this.device.addEventListener('uncapturederror',e=>{this.errors.push(String(e.error));console.error(e.error);});
+  this.device.lost.then(info=>{if(!this.closed){console.warn('GPU device lost',info.message);recoverCPU();}});
+  const D=this.device,U=GPUBufferUsage;
+  const buf=(size,usage)=>D.createBuffer({size,usage});
+  this.p=[buf(this.bytes,U.STORAGE|U.COPY_DST|U.COPY_SRC),buf(this.bytes,U.STORAGE|U.COPY_DST|U.COPY_SRC)];
+  this.terrain=buf(CELLS*16,U.STORAGE|U.COPY_DST);this.food=buf(CELLS*4,U.STORAGE|U.COPY_SRC|U.COPY_DST);
+  this.brains=buf(b.byteLength,U.STORAGE|U.COPY_DST);this.matrix=buf(m.byteLength,U.STORAGE|U.COPY_DST);
+  this.grid=buf((BINS+2*this.n+2)*4,U.STORAGE|U.COPY_SRC|U.COPY_DST);this.uniform=buf(64,U.UNIFORM|U.COPY_DST);
+  const module=D.createShaderModule({code:GPU_SOURCE});const info=await module.getCompilationInfo();const errors=info.messages.filter(e=>e.type==='error');if(errors.length)throw Error(errors.map(e=>e.message).join('\n'));
+  const entries=[0,1,2,3,4,5,6].map(i=>({binding:i,visibility:GPUShaderStage.COMPUTE,buffer:{type:[0,2,4,5].includes(i)?'read-only-storage':'storage'}}));entries.push({binding:7,visibility:GPUShaderStage.COMPUTE,buffer:{type:'uniform'}});
+  const layout=D.createBindGroupLayout({entries}),pipelineLayout=D.createPipelineLayout({bindGroupLayouts:[layout]});this.pipelines={};
+  for(const name of ['reset','bins','step','births'])this.pipelines[name]=await D.createComputePipelineAsync({layout:pipelineLayout,compute:{module,entryPoint:name}});
+  this.groups=[0,1].map(i=>D.createBindGroup({layout,entries:[this.p[i],this.p[1-i],this.terrain,this.food,this.brains,this.matrix,this.grid,this.uniform].map((buffer,binding)=>({binding,resource:{buffer}}))}));
+  this.queue.writeBuffer(this.p[0],0,a);this.queue.writeBuffer(this.p[1],0,a);this.queue.writeBuffer(this.food,0,w.food);this.queue.writeBuffer(this.brains,0,b);this.queue.writeBuffer(this.matrix,0,m);this.uploadTerrain(w);
+  this.scratch=D.createBuffer({size:this.bytes+CELLS*4+8,usage:U.COPY_DST|U.MAP_READ});return this;
+ }
+ uploadTerrain(w){this.queue.writeBuffer(this.terrain,0,worldGPUData(w));}
+ updateMatrix(m){this.queue.writeBuffer(this.matrix,0,m);}
+ async replace(a,w,resetFood=false){if(this.pending)await this.pending;this.queue.writeBuffer(this.p[0],0,a);this.queue.writeBuffer(this.p[1],0,a);if(resetFood)this.queue.writeBuffer(this.food,0,w.food);this.uploadTerrain(w);}
+ paintFood(w,ids){if(ids.size>200)this.queue.writeBuffer(this.food,0,w.food);else for(const i of ids)this.queue.writeBuffer(this.food,i*4,w.food.subarray(i,i+1));this.uploadTerrain(w);}
+ step(params){
+  this.queue.writeBuffer(this.uniform,0,params);const enc=this.device.createCommandEncoder();
+  for(const name of ['reset','bins','step','births']){const p=enc.beginComputePass();p.setPipeline(this.pipelines[name]);p.setBindGroup(0,this.groups[this.flip]);p.dispatchWorkgroups(Math.ceil((name==='reset'?Math.max(CELLS,this.n):this.n)/128));p.end();}
+  this.queue.submit([enc.finish()]);this.flip=1-this.flip;
+ }
+ async read(force=false){
+  if(this.pending){if(!force)return this.pending;await this.pending;}
+  this.pending=(async()=>{const enc=this.device.createCommandEncoder();enc.copyBufferToBuffer(this.p[this.flip],0,this.scratch,0,this.bytes);enc.copyBufferToBuffer(this.food,0,this.scratch,this.bytes,CELLS*4);enc.copyBufferToBuffer(this.grid,(BINS+2*this.n)*4,this.scratch,this.bytes+CELLS*4,8);this.queue.submit([enc.finish()]);
+   await this.scratch.mapAsync(GPUMapMode.READ);const copy=this.scratch.getMappedRange().slice(0);this.scratch.unmap();return{particles:new Float32Array(copy,0,this.n*32),food:new Int32Array(copy,this.bytes,CELLS),counters:new Int32Array(copy,this.bytes+CELLS*4,2)};
+  })();try{return await this.pending;}finally{this.pending=null;}
+ }
+ async close(){this.closed=true;if(this.pending)try{await this.pending;}catch{}this.device?.destroy();}
+}
+// Compatibility implementation of the same budget, inheritance, and network equations.
+class CPUEcology{
+ async init(w,a,b,m){this.w=w;this.a=a.slice();this.b=new Float32Array(a.length);this.brains=b;this.matrix=m;this.n=a.length/32;this.head=new Int32Array(BINS);this.next=new Int32Array(this.n);this.claim=new Int32Array(this.n);this.food=w.food.slice();this.counters=new Int32Array(2);this.name='Compatibility';return this;}
+ uploadTerrain(w){this.w=w;}updateMatrix(m){this.matrix=m;}
+ async replace(a,w,resetFood=false){this.a=a.slice();this.b=new Float32Array(a.length);this.w=w;if(resetFood)this.food=w.food.slice();}
+ paintFood(w,ids){for(const i of ids)this.food[i]=w.food[i];this.w=w;}
+ async read(){return{particles:this.a.slice(),food:this.food.slice(),counters:this.counters.slice()};}
+ async close(){}
+ step(u){
+  const a=this.a,b=this.b,n=this.n,w=this.w,dt=u[0],tick=u[2];this.head.fill(-1);this.claim.fill(-1);
+  const at=(x,y)=>tileIndex(x,y),solid=(x,y)=>w.tiles[at(x,y)]?1:0,foodAt=(x,y)=>Math.max(0,this.food[at(x,y)])/6000;
+  for(let c=0;c<CELLS;c++){if(w.tiles[c]){this.food[c]=0;continue;}let amount=this.food[c],cap=w.cap[c]|0;let growth=((2+Math.max(.12,w.light[c]*u[4])*5+w.water[c]*3)*(1+u[5]*.9)*u[6])|0;if(amount<cap&&cap>0)this.food[c]+=Math.min(growth,cap-amount);}
+  for(let i=0;i<n;i++){const o=i*32;if(a[o+4]<=0)continue;const bin=clamp(Math.floor(a[o+1]/32),0,31)*60+clamp(Math.floor(a[o]/32),0,59);this.next[i]=this.head[bin];this.head[bin]=i;}
+  b.set(a);
+  for(let i=0;i<n;i++){
+   const o=i*32;
+   if(a[o+4]<=0){
+    if(hash32((i*73+tick*379)>>>0)/4294967295>.18)continue;
+    for(let k=0;k<12;k++){
+     const j=hash32((i*1999+tick*1237+k*7919)>>>0)%n,q=j*32;if(a[q+4]<1.5||a[q+5]<5||this.claim[j]>=0)continue;
+     const x=clamp(a[q]+(hash32((tick+i*17+k)>>>0)/4294967295-.5)*15,9,1910),y=clamp(a[q+1]-5-hash32((i+tick*31)>>>0)/4294967295*8,9,1005);if(solid(x,y))continue;
+     this.claim[j]=i;b.set(a.subarray(q,q+32),o);b[o]=x;b[o+1]=y;b[o+2]*=.3;b[o+3]*=.3;b[o+4]=0;b[o+5]=0;b[o+7]++;b.fill(0,o+8,o+16);
+     for(let g=0;g<16;g++){const seed=(i*1949+j*811+tick*379+g*7919)>>>0,delta=hash32(seed)/4294967295<.22?(hash32((seed+91)>>>0)/4294967295-.5)*u[3]*3:0;b[o+16+g]=clamp(a[q+16+g]+delta,-1.5,1.5);}break;
+    }continue;
+   }
+   const x=a[o],y=a[o+1],sp=a[o+6]|0,cell=at(x,y),water=w.water[cell],genes=a.subarray(o+16,o+32);let sx=0,sy=0,kin=0,other=0,neigh=0;
+   const bx=Math.floor(x/32),by=Math.floor(y/32);
+   for(let yy=by-1;yy<=by+1;yy++)for(let xx=bx-1;xx<=bx+1;xx++){
+    if(xx<0||yy<0||xx>=60||yy>=32)continue;let j=this.head[yy*60+xx],seen=0;
+    while(j>=0&&seen++<24){const q=j*32,qi=j;j=this.next[j];if(qi===i)continue;const dx=a[q]-x,dy=a[q+1]-y,r=Math.hypot(dx,dy);if(r<.01||r>34)continue;if(solid(x+dx*.25,y+dy*.25)+solid(x+dx*.5,y+dy*.5)+solid(x+dx*.75,y+dy*.75))continue;
+     const qsp=a[q+6]|0,fall=1-r/34;let affinity=this.matrix[sp*6+qsp];if(u[7]>.5)affinity+=.22*(genes[2]*a[q+19]+genes[14]*a[q+31]);const force=r<5?-(5-r)*12:affinity*fall*7;sx+=dx/r*force;sy+=dy/r*force;neigh+=fall;if(qsp===sp)kin+=fall;else other+=fall;
+    }
+   }
+   sx/=Math.max(1,neigh*.45);sy/=Math.max(1,neigh*.45);
+   const fgx=foodAt(x+12,y)-foodAt(x-12,y),fgy=foodAt(x,y+12)-foodAt(x,y-12),wx=solid(x-7,y)-solid(x+7,y),wy=solid(x,y-7)-solid(x,y+7);
+   const inputs=[clamp(fgx*2,-1,1),clamp(fgy*2,-1,1),clamp(foodAt(x,y),0,1),water,a[o+4]*.5,w.light[cell]*u[4],a[o+2]*.04,a[o+3]*.04,Math.min(1,kin*.2),Math.min(1,other*.2),wx,wy,sx*.1,sy*.1,Math.sin(u[8]*.65+i*1.73),hash32((i+tick*79)>>>0)/4294967295*2-1];
+   const result=inferBrain(this.brains,sp,inputs,a.subarray(o+8,o+16),genes),act=result.out,maxSpeed=14+genes[0]*3,mx=act[0]*maxSpeed,my=act[1]*maxSpeed;
+   let ax=mx+sx*u[9]*(.8+act[2]*.6)+wx*16,ay=my+sy*u[9]*(.8+act[2]*.6)+wy*16;
+   if(sp===0||sp===4){ay+=23*(1-water*.8);if(solid(x,y+6)&&act[1]<.4)ay-=38*Math.max(.2,Math.abs(act[0]));}
+   else if(sp===2){ax+=(w.water[at(x+16,y)]-w.water[at(x-16,y)])*16;ay+=(w.water[at(x,y+16)]-w.water[at(x,y-16)])*16;if(water<.15)ay+=18;}
+   else ay+=(.24-w.light[cell])*2.5;
+   ax+=Math.sin(y*.011+u[8]*.17)*(water*2+u[5]*.7);
+   let vx=clamp((a[o+2]+ax*dt)*Math.exp(-dt),-34,34),vy=clamp((a[o+3]+ay*dt)*Math.exp(-dt),-34,34),nx=clamp(x+vx*dt,10,1909),ny=clamp(y+vy*dt,16,1005);
+   if(solid(nx,y)){nx=x;vx*=-.35;}if(solid(nx,ny)){ny=y;vy*=-.25;}if(solid(nx,ny)){for(let k=1;k<=8;k++)if(!solid(nx,ny-k*8)){ny-=k*8;break;}}
+   const request=(7+(act[3]+1)*2+Math.max(0,genes[3])*2)|0,got=Math.min(Math.max(0,this.food[cell]),request);this.food[cell]-=got;
+   const effort=(mx*mx+my*my)*.000015+Math.hypot(sx,sy)*u[9]*.00012,dry=sp===2&&water<.1?.075:0,senescence=Math.max(0,a[o+5]-(95+genes[1]*22)),ageCost=senescence*senescence*.0025;
+   b[o]=nx;b[o+1]=ny;b[o+2]=vx;b[o+3]=vy;b[o+4]=clamp(a[o+4]+got*.0026-dt*(.010+.002*Math.abs(genes[0])+.003*Math.abs(genes[1])+effort+dry+ageCost),0,2.4);b[o+5]=a[o+5]+dt;b.set(result.h,o+8);
+   if(b[o+4]<=0){this.food[at(nx,ny)]+=210;this.counters[1]++;}
+  }
+  for(let j=0;j<n;j++){const child=this.claim[j];if(child>=0&&b[j*32+4]>1.2){b[j*32+4]-=.65;b[child*32+4]=.55;this.counters[0]++;}}
+  this.a=b;this.b=a;
+ }
+}
+let counterBase={births:0,deaths:0},lastCounters=[0,0];
+async function makeEngine(w,a){
+ let e;
+ if(navigator.gpu){try{e=new GPUEcology();await e.init(w,a,brains,matrix);return e;}catch(error){console.warn('Using compatibility ecology:',error.message);if(e)try{await e.close();}catch{}}}
+ return await new CPUEcology().init(w,a,brains,matrix);
+}
+async function recoverCPU(){if(busy||!engine||engine.name!=='WebGPU')return;busy=true;try{const old=engine;engine=await new CPUEcology().init(world,state,brains,matrix);counterBase={births:game.births,deaths:game.deaths};lastCounters=[0,0];await old.close();toast('Continuing in compatibility mode.');}finally{busy=false;}}
+function params(){const light=dayLight();return new Float32Array([CFG.step,capacity,tick,options.mutation,light,simTime<rainUntil?1:0,options.fertility,options.affinities?1:0,simTime,options.force,0,0,0,0,0,0]);}
+function dayLight(){return .28+.72*Math.max(0,Math.sin((simTime/110+.2)*TAU));}
+async function syncSnapshot(force=false){
+ const e=engine;if(!e)return;const epoch=saveSerial;
+ try{const snap=await e.read(force);if(e!==engine||epoch!==saveSerial)return;state=snap.particles;world.food.set(snap.food);summary=aggregate(state);game.births=counterBase.births+snap.counters[0];game.deaths=counterBase.deaths+snap.counters[1];lastCounters=Array.from(snap.counters);snapshotTime=performance.now();floraDirty=true;}catch(error){console.error(error);if(engine===e)await recoverCPU();}
+}
+/* RENDER_SECTION */
+const offscreen=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
+const sprites=[];
+function colorMix(a,b,t){const aa=parseInt(a.slice(1),16),bb=parseInt(b.slice(1),16);return'#'+[16,8,0].map(s=>Math.round(lerp((aa>>s)&255,(bb>>s)&255,t)).toString(16).padStart(2,'0')).join('');}
+function pixelEllipse(c,x,y,rx,ry,col,step=3){c.fillStyle=col;for(let yy=-ry;yy<=ry;yy+=step){const xx=Math.sqrt(Math.max(0,1-yy*yy/(ry*ry)))*rx;c.fillRect(Math.round((x-xx)/step)*step,Math.round((y+yy)/step)*step,Math.max(step,Math.round(xx*2/step)*step),step);}}
+function drawTree(c,t,pal,back=false){
+ const r=rng(t.seed),x=t.x,y=t.y,h=t.height,top=y-h,lean=t.lean||0,wood=back?'#365956':'#4c5848';
+ c.fillStyle=wood;const width=back?7:10;for(let j=0;j<h;j+=4){const dx=lean*(1-j/h)+Math.sin(j*.035)*3;c.fillRect(Math.round(x+dx-width/2),y-j,width,5);if(!back){c.fillStyle='#829174';c.fillRect(Math.round(x+dx-width/2)+2,y-j,2,4);c.fillStyle=wood;}}
+ for(let j=0;j<6;j++){const yy=top+h*(.1+j*.07),dir=j%2?1:-1,l=15+r()*20;for(let k=0;k<l;k+=3){c.fillRect(Math.round(x+lean*.7+dir*k),Math.round(yy-k*.4),4,4);}}
+ for(let j=0;j<12;j++){const xx=x+lean+(r()-.5)*t.width*1.3,yy=top+(r()-.2)*h*.34,rx=t.width*(.38+r()*.38),ry=rx*(.5+r()*.22);pixelEllipse(c,xx,yy,rx,ry,back?['#3e635f','#476c66'][j%2]:pal.leaf[j%3],4);}
+ if(!back){c.fillStyle=pal.grass;for(let j=0;j<14;j++){let xx=x+lean+(r()-.5)*t.width*1.5,yy=top+(r()-.3)*h*.3;c.fillRect(xx|0,yy|0,3+r()*6|0,2);}c.fillStyle='#4b6248';for(let j=0;j<4;j++)c.fillRect(x-18+j*10,y-2-(j%2)*3,12,5);}
+}
+function rebuildTerrainLayer(){
+ const pal=BIOMES[world.biome],sd=world.backgroundSeed;terrainLayer=offscreen(1920,1024);const c=terrainLayer.getContext('2d');
+ // Cave walls sit behind carved, traversable foreground terrain.
+ c.fillStyle=pal.cave;for(let x=0;x<240;x++)c.fillRect(x*8,world.surface[x]*8,8,1024-world.surface[x]*8);
+ for(let y=42;y<128;y++)for(let x=1;x<239;x++){const i=y*240+x;if(y<world.surface[x])continue;const n=hash32(sd+i*713);if(!world.tiles[i]&&n%9===0){c.fillStyle=colorMix(pal.cave,pal.rock[0],.2);c.fillRect(x*8+(n%3),y*8+(n%5),3+(n%8),2);}}
+ for(let y=0;y<128;y++)for(let x=0;x<240;x++){
+  const i=y*240+x,t=world.tiles[i];if(!t)continue;const n=hash32(sd+i*449),openTop=y>0&&!world.tiles[i-240],soil=t===1;
+  let col=soil?pal.soil[n%2]:pal.rock[(Math.floor(x/7)+Math.floor(y/9)+(n%7===0?1:0))%3];
+  c.fillStyle=col;c.fillRect(x*8,y*8,8,8);
+  if(n%3===0){c.fillStyle=colorMix(col,'#101822',.16);c.fillRect(x*8+(n%4),y*8+(n%5),3+(n%3),2);}
+  if(!soil&&n%23===0){c.fillStyle=world.biome==='amber'?'#b8896a':world.biome==='lunar'?'#9694be':'#6c8980';c.fillRect(x*8+2,y*8+3,3,2);}
+  if(openTop){c.fillStyle=soil?pal.grass:colorMix(col,'#b4c1a6',.25);c.fillRect(x*8,y*8,8,2);if(soil){c.fillRect(x*8+1,y*8-2,2,4);if(n%2)c.fillRect(x*8+5,y*8-3,2,5);}else{c.fillStyle='#111925';c.fillRect(x*8,y*8+6,8,2);}}
+  if(x>0&&!world.tiles[i-1]){c.fillStyle=colorMix(col,'#bac4aa',.16);c.fillRect(x*8,y*8,2,8);}if(x<239&&!world.tiles[i+1]){c.fillStyle=colorMix(col,'#070e1b',.3);c.fillRect(x*8+6,y*8,2,8);}
+  if(y<127&&!world.tiles[i+240]){c.fillStyle=colorMix(col,'#060d17',.4);c.fillRect(x*8,y*8+5,8,3);if(n%3===0){c.fillRect(x*8+2,y*8+8,3,4+n%9);}}
+ }
+ skyLayer=offscreen(1920,1024);const s=skyLayer.getContext('2d');
+ for(let layer=0;layer<3;layer++){
+  const color=world.biome==='amber'?['#786476','#867779','#929183'][layer]:world.biome==='lunar'?['#3f4e70','#4a657d','#547984'][layer]:['#4c6e77','#577f7c','#62877b'][layer];
+  s.fillStyle=color;s.beginPath();s.moveTo(0,600);for(let x=0;x<=1920;x+=12){const y=190+layer*45+(noise2(x*.0027,layer*10,sd+39)-.5)*150+Math.sin(x*.007+layer)*12;s.lineTo(x,y);}s.lineTo(1920,1024);s.lineTo(0,1024);s.fill();
+ }
+ for(let x=20;x<1900;x+=28+(hash32(x+sd)%30)){const n=hash32(x+sd),y=world.surface[Math.floor(x/8)]*8+12;drawTree(s,{x,y,height:65+n%70,width:25+n%22,seed:n,lean:0},pal,true);}
+ terrainDirty=false;minimapDirty=true;rebuildWaterLayer();
+}
+function rebuildWaterLayer(){waterLayer=offscreen(1920,1024);const c=waterLayer.getContext('2d'),pal=BIOMES[world.biome];for(let y=0;y<128;y++)for(let x=0;x<240;x++){const i=y*240+x,v=world.water[i];if(v<.025||world.tiles[i])continue;c.fillStyle=pal.water;c.globalAlpha=.38+v*.15;const h=Math.ceil(v*8);c.fillRect(x*8,y*8+8-h,8,h);if(y===0||world.water[i-240]<.02){c.fillStyle=colorMix(pal.water,'#d3f0dc',.6);c.globalAlpha=.68;c.fillRect(x*8,y*8+8-h,8,1);}}c.globalAlpha=1;}
+function drawPlant(c,p,energy=1){
+ const rr=rng(p.seed),x=p.x|0,y=p.y|0,s=p.size,col=BIOMES[world.biome].grass;
+ if(p.type==='mushroom'){
+  c.fillStyle='#9faeaf';c.fillRect(x-2,y-s*.76,4,s*.76);c.fillStyle='#bdcad0';c.fillRect(x-1,y-s*.76,1,s*.76);
+  pixelEllipse(c,x,y-s*.73,s*.65,s*.3,colorMix('#665178','#b69fda',.3+energy*.5),2);c.fillStyle='#dad1ee';c.fillRect(x-s*.5,y-s*.67,s,2);
+  for(let k=0;k<4;k++){c.fillStyle='#d6caef';c.fillRect(x+(rr()-.5)*s,y-s*.8-rr()*s*.17,2,2);}
+  c.fillStyle='#6c7290';c.fillRect(x-5,y-2,10,2);
+ }else if(p.type==='crystal'){
+  const colors=['#477e92','#6eb7bc','#b5e8d7'];for(let j=0;j<3;j++){let xx=x+(j-1)*s*.33,h=s*(.6+rr()*.6),wi=Math.max(3,s*.2);for(let z=0;z<h;z+=2){const width=z<6?wi*z/6:wi;c.fillStyle=colors[j];c.fillRect((xx-width/2)|0,(y-h+z)|0,Math.max(2,width|0),2);}c.fillStyle='#e2efca';c.fillRect(xx-1,y-h+3,1,h*.5);}
+ }else{
+  const h=s*(.55+energy*.45);c.fillStyle=colorMix('#497654',col,.55);c.fillRect(x-1,y-h,2,h);
+  for(let j=0;j<4;j++){let yy=y-h*(.25+j*.19),l=(4-j)*2+rr()*3;for(const d of [-1,1]){c.fillStyle=j%2?col:colorMix(col,'#31584e',.3);c.fillRect(x+(d<0?-l:1),yy-2,l,3);c.fillRect(x+d*(l*.6),yy-4,3,3);}}
+  if(p.type==='flower'){pixelEllipse(c,x,y-h,4,3,'#e8bd85',2);c.fillStyle='#f6dec1';c.fillRect(x-1,y-h-1,2,2);}
+ }
+}
+function rebuildFloraLayer(){floraLayer=offscreen(1920,1024);const c=floraLayer.getContext('2d'),pal=BIOMES[world.biome];for(const t of world.trees)drawTree(c,t,pal);for(const p of world.plants){const i=tileIndex(p.x,p.y-6),energy=clamp(world.food[i]/Math.max(1,world.cap[i]),0,1);drawPlant(c,p,.3+energy*.7);}floraDirty=false;}
+function makeSprites(){
+ for(let sp=0;sp<6;sp++){sprites[sp]=[];for(let frame=0;frame<4;frame++){
+  const a=offscreen(32,32),c=a.getContext('2d'),f=FAMILIES[sp],bob=frame%2,px=(x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(x,y,w,h);};
+  if(sp===0){pixelEllipse(c,16,20+bob,10,7,f.dark,2);pixelEllipse(c,16,18+bob,9,7,f.color,2);px(15,6,2,7,'#7d9c59');px(16,6,6,3,'#d7e8a0');px(10,25,4,2,f.dark);px(20,25,4,2,f.dark);}
+  if(sp===1){const rise=[0,3,6,3][frame];pixelEllipse(c,11,12-rise,7,4,'#d9d6b9',2);pixelEllipse(c,23,11-rise,6,4,'#e3e4c4',2);pixelEllipse(c,16,19,9,5,f.dark,2);pixelEllipse(c,12,19,5,4,f.color,2);px(22,15,5,6,'#d6af78');px(26,15,2,2,'#efdbaa');}
+  if(sp===2){pixelEllipse(c,17,17,10,6,f.dark,2);pixelEllipse(c,17,15,9,5,f.color,2);px(3,12+bob,5,10-2*bob,f.color);px(14,8,6,4,'#b4e4cb');px(15,21,5,3,'#7eadae');}
+  if(sp===3){px(13,18,6,9,'#acb0c5');px(9,26+bob,4,2,'#a398bc');px(21,26-bob,4,2,'#a398bc');pixelEllipse(c,16,14,12,7,f.dark,2);pixelEllipse(c,16,12,11,6,f.color,2);px(6,17,20,2,'#dbbfed');px(12,8,3,2,'#e8d9ef');px(21,11,2,2,'#e8d9ef');}
+  if(sp===4){for(let j=0;j<3;j++){px(8+j*6,23+((j+frame)%2),3,4,f.dark);}pixelEllipse(c,16,19,10,6,f.dark,2);pixelEllipse(c,15,16,9,6,f.color,2);px(12,12,2,10,f.dark);px(18,13,2,8,f.dark);px(24,16,5,6,'#a5ac86');}
+  if(sp===5){const wing=[9,5,2,5][frame];pixelEllipse(c,11,16,wing,9,f.dark,2);pixelEllipse(c,21,16,wing,9,f.color,2);pixelEllipse(c,16,17,3,7,'#9ab4b5',2);px(14,7,2,4,'#d5ddca');px(19,7,2,4,'#d5ddca');}
+  if(sp!==5){px(22,sp===3?20:15+bob,3,3,'#eff4d9');px(24,sp===3?21:16+bob,1,2,'#253a40');}else{px(17,12,2,2,'#f9efd2');}
+  sprites[sp][frame]=a;
+ }}
+}
+function resize(){screenW=innerWidth;screenH=innerHeight;renderScale=Math.min(2,devicePixelRatio||1);canvas.width=Math.round(screenW*renderScale);canvas.height=Math.round(screenH*renderScale);canvas.style.width=screenW+'px';canvas.style.height=screenH+'px';ctx.imageSmoothingEnabled=false;if(!cameraMoved)fitWorld();}
+function fitWorld(){camera.zoom=Math.min(screenW/1920,(screenH-100)/1024)*.96;camera.x=960;camera.y=490;cameraMoved=false;}
+function toWorld(x,y){return{x:(x-screenW/2)/camera.zoom+camera.x,y:(y-screenH/2)/camera.zoom+camera.y};}
+function toScreen(x,y){return{x:(x-camera.x)*camera.zoom+screenW/2,y:(y-camera.y)*camera.zoom+screenH/2};}
+function constrainCamera(){camera.zoom=clamp(camera.zoom,Math.min(screenW/1920,screenH/1024)*.65,4);camera.x=clamp(camera.x,0,1920);camera.y=clamp(camera.y,0,1024);}
+function render(now){
+ if(!world)return;if(terrainDirty)rebuildTerrainLayer();if(floraDirty&&now-lastEnv>400){rebuildFloraLayer();lastEnv=now;}if(!floraLayer)rebuildFloraLayer();
+ ctx.setTransform(renderScale,0,0,renderScale,0,0);const pal=BIOMES[world.biome],dl=dayLight();
+ const sky=ctx.createLinearGradient(0,0,0,screenH);sky.addColorStop(0,colorMix(pal.sky[0],'#060f26',(1-dl)*.65));sky.addColorStop(.7,colorMix(pal.sky[1],'#142341',(1-dl)*.8));sky.addColorStop(1,pal.cave);ctx.fillStyle=sky;ctx.fillRect(0,0,screenW,screenH);
+ ctx.save();ctx.translate(screenW/2,screenH/2);ctx.scale(camera.zoom,camera.zoom);ctx.translate(-camera.x,-camera.y);
+ // Slowly changing sunlight gives the same terrain several moods.
+ const sunX=1420+Math.sin(simTime/110*TAU)*210,sunY=116+Math.cos(simTime/110*TAU)*40;
+ ctx.globalAlpha=.25+dl*.6;pixelEllipse(ctx,sunX,sunY,29,29,world.biome==='lunar'?'#d7dfd9':'#e4d8a7',3);ctx.globalAlpha=1;
+ if(dl<.6){ctx.fillStyle='#d8dfd2';ctx.globalAlpha=(.6-dl)*1.6;for(let k=0;k<100;k++){const x=hash32(k*481+world.backgroundSeed)%1920,y=hash32(k*717+12)%220;ctx.fillRect(x,y,k%5===0?2:1,k%5===0?2:1);}ctx.globalAlpha=1;}
+ ctx.save();ctx.translate((camera.x-960)*.14,8);ctx.globalAlpha=.72;ctx.drawImage(skyLayer,0,0);ctx.restore();
+ ctx.drawImage(terrainLayer,0,0);
+ if(dl>.5){ctx.globalAlpha=(dl-.5)*.10;ctx.fillStyle='#ece6b0';for(let k=0;k<4;k++){let x=350+k*405;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+45,0);ctx.lineTo(x-75,400);ctx.lineTo(x-170,400);ctx.closePath();ctx.fill();}ctx.globalAlpha=1;}
+ // Resource overlays are optional instruments over the playable world.
+ if(options.showFood){for(let i=0;i<CELLS;i++){let v=world.food[i]/6000;if(v<.05)continue;ctx.globalAlpha=Math.min(.65,v*.28);ctx.fillStyle='#abf0b4';ctx.fillRect(i%240*8,Math.floor(i/240)*8,8,8);}ctx.globalAlpha=1;}
+ if(floraLayer)ctx.drawImage(floraLayer,0,0);
+ if(waterLayer)ctx.drawImage(waterLayer,0,0);
+ // These halos belong to the actual food-bearing flora in the simulation.
+ ctx.globalCompositeOperation='screen';for(const p of world.plants){if(p.type!=='crystal'&&p.type!=='mushroom')continue;const r=p.size*1.65,g=ctx.createRadialGradient(p.x,p.y-p.size*.7,1,p.x,p.y-p.size*.7,r);g.addColorStop(0,p.type==='crystal'?'#68bfba20':'#bd93e31a');g.addColorStop(1,'#00000000');ctx.fillStyle=g;ctx.fillRect(p.x-r,p.y-p.size*.7-r,r*2,r*2);}ctx.globalCompositeOperation='source-over';
+ const left=camera.x-screenW/(camera.zoom*2)-30,right=camera.x+screenW/(camera.zoom*2)+30,top=camera.y-screenH/(camera.zoom*2)-30,bot=camera.y+screenH/(camera.zoom*2)+30;
+ const extrapolate=paused?0:Math.min(.1,(now-snapshotTime)/1000)*2.4*speed;
+ if(state)for(let i=0;i<capacity;i++){
+  const o=i*32,e=state[o+4];if(e<=0)continue;const x=state[o]+state[o+2]*extrapolate,y=state[o+1]+state[o+3]*extrapolate;if(x<left||x>right||y<top||y>bot)continue;
+  const sp=state[o+6]|0,frame=Math.floor(simTime*5+i)%4,size=(sp===3?20:sp===5?20:18)*(1+state[o+17]*.14),s=sprites[sp][frame];
+  ctx.globalAlpha=clamp(.58+e*.25,.58,1);ctx.save();ctx.translate(Math.round(x),Math.round(y));if(state[o+2]<-.5)ctx.scale(-1,1);ctx.drawImage(s,-size/2,-size*.55,size,size);ctx.restore();
+  if((sp===1||sp===3)&&camera.zoom>.6){ctx.globalCompositeOperation='screen';ctx.globalAlpha=.09;ctx.fillStyle=FAMILIES[sp].color;ctx.fillRect(x-8,y-4,16,8);ctx.globalCompositeOperation='source-over';}ctx.globalAlpha=1;
+ }
+ if(selectedParticle>=0&&state&&state[selectedParticle*32+4]>0){const o=selectedParticle*32,x=state[o],y=state[o+1];ctx.strokeStyle='#eee7bc';ctx.lineWidth=1/camera.zoom;ctx.beginPath();ctx.arc(x,y,13,0,TAU);ctx.stroke();}
+ // Sparse drifting pollen and water glints make motion readable at landscape scale.
+ ctx.fillStyle='#e7e9ba';for(let k=0;k<65;k++){const h=hash32(k*1153+world.backgroundSeed),x=(h%1920+simTime*(.4+(k%4)*.3))%1920,y=35+(hash32(h+9)%300)+Math.sin(simTime*.35+k)*8;if(y>world.surface[clamp(Math.floor(x/8),0,239)]*8)continue;ctx.globalAlpha=.15+.25*Math.sin(k+simTime*.3)**2;ctx.fillRect(x|0,y|0,2,2);}ctx.globalAlpha=1;
+ if(simTime<rainUntil){ctx.strokeStyle='#b8dcd370';ctx.lineWidth=1;ctx.beginPath();for(let k=0;k<160;k++){const h=hash32(k*998+world.backgroundSeed),x=(h%1920+simTime*19)%1920,y=(hash32(h+8)%340+simTime*180)%360;ctx.moveTo(x,y);ctx.lineTo(x-2,y+9);}ctx.stroke();}
+ if(hover&&tool!=='hand'){
+  const rad=tool==='dig'||tool==='soil'?brush*8:tool==='mutate'?48:12;ctx.strokeStyle=tool==='dig'?'#edc57c':'#b8e7b2';ctx.lineWidth=1.5/camera.zoom;ctx.setLineDash([3/camera.zoom,3/camera.zoom]);ctx.beginPath();ctx.arc(hover.x,hover.y,rad,0,TAU);ctx.stroke();ctx.setLineDash([]);
+ }
+ ctx.restore();
+ if(minimapDirty)drawMinimapBase();drawMinimapCamera();
+}
+let minimapBase;
+function drawMinimapBase(){minimapBase=offscreen(192,104);const c=minimapBase.getContext('2d'),pal=BIOMES[world.biome];c.fillStyle=pal.sky[0];c.fillRect(0,0,192,104);for(let i=0;i<CELLS;i++){if(!world.tiles[i]&&!world.water[i])continue;c.fillStyle=world.water[i]>.1?pal.water:world.tiles[i]===1?pal.grass:pal.rock[1];c.fillRect(i%240*.8,Math.floor(i/240)*.8125,1,1);}minimapDirty=false;}
+function drawMinimapCamera(){if(!minimapBase)return;mapCtx.drawImage(minimapBase,0,0);mapCtx.strokeStyle='#efdfb0';mapCtx.lineWidth=1;const w=screenW/camera.zoom/10,h=screenH/camera.zoom*104/1024;mapCtx.strokeRect(camera.x/10-w/2,camera.y*104/1024-h/2,w,h);}
+/* UI_SECTION */
+function toast(message){const el=$('#toast');el.textContent=message;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3200);}
+function logEvent(message){journal.unshift({day:Math.floor(simTime/110)+1,message});journal=journal.slice(0,60);}
+function setTool(id){tool=id;$('#tools').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.tool===id)));$('#tool-hint').textContent=TOOLS.find(t=>t.id===id).hint;canvas.style.cursor=id==='hand'?'grab':'crosshair';}
+function cost(n){if(options.freeBuild)return true;if(essence<n){toast('Not enough growth yet. Complete a discovery or let the garden grow.');return false;}essence-=n;return true;}
+function openDrawer(tab){drawerTab=tab;$('#drawer').hidden=false;renderDrawer();}
+function closeDrawer(){drawerTab='';$('#drawer').hidden=true;}
+function renderDrawer(){
+ const title=$('#drawer-title'),body=$('#drawer-content');
+ if(drawerTab==='life'){
+  title.textContent='Life in the hollow';body.innerHTML=`<div class="eyebrow">Six founder families</div><div id="family-list"></div><div class="separator"></div><div id="specimen"></div><canvas class="brain" id="brain" width="296" height="130" aria-label="Recurrent neural activity of the selected creature"></canvas><p>Eight recurrent neurons sense food, water, walls, energy, and neighbors. Sixteen inherited genes modulate their wiring and physical traits.</p><button id="release-selected" class="primary" style="width:100%">Release ${FAMILIES[selectedFamily].name} · 12 ✦</button><div class="separator"></div><div class="line"><label for="affinities">Inherited affinities</label><input type="checkbox" id="affinities" ${options.affinities?'checked':''}></div><p id="affinity-help">${options.affinities?'Inherited traits vary the pair forces around your matrix.':'Your matrix sets pair forces. It stays exactly as you set it.'}</p><div class="matrix-key"><span>− avoid</span><span>Rows sense columns</span><span>+ approach</span></div><div class="pair-grid" id="matrix-grid"></div><div class="line"><label id="pair-label" for="pair-slider">Mossling → Mossling</label><output id="pair-value">0.25</output></div><input id="pair-slider" aria-labelledby="pair-label" type="range" min="-1.5" max="1.5" step=".05"><div class="compact"><button data-preset="gentle">Gentle</button><button data-preset="clans">Clans</button><button data-preset="chase">Chase</button><button data-preset="neutral">Neutral</button></div>`;
+  $('#affinities').onchange=e=>{options.affinities=e.target.checked;$('#affinity-help').textContent=options.affinities?'Inherited traits vary the pair forces around your matrix.':'Your matrix sets pair forces. It stays exactly as you set it.';};
+  $('#release-selected').onclick=()=>{setTool('seed');closeDrawer();toast(`Click an open space to introduce ${FAMILIES[selectedFamily].name}.`);};
+  body.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>{matrix=createMatrix(b.dataset.preset);engine.updateMatrix(matrix);renderMatrix();logEvent(`Relationships changed: ${b.dataset.preset}.`);});
+  $('#pair-slider').oninput=e=>{matrix[pairSelection]=Number(e.target.value);engine.updateMatrix(matrix);renderMatrix(false);};renderMatrix();updateLifePanel();
+ }else if(drawerTab==='journal'){
+  title.textContent='Field journal';body.innerHTML=`<div class="eyebrow">${completed.size} of ${QUESTS.length} discoveries</div><div id="quests"></div><div class="separator"></div><div class="eyebrow">Life in this world</div><div id="events"></div>`;updateJournal();
+ }else if(drawerTab==='world'){
+  title.textContent='Your terrarium';body.innerHTML=`<div class="eyebrow">${BIOMES[world.biome].name}</div><p id="seed-description"></p><div class="compact"><button id="new-world">New world</button><button id="download-world">Save file</button><button id="load-world">Load file</button></div><div class="compact" style="margin-top:7px"><button id="local-save">Save here</button><button id="local-load">Restore here</button><button id="rain-world">Rain · 10 ✦</button></div><div class="separator"></div><div class="line"><label for="free-build">Free build</label><input id="free-build" type="checkbox" ${options.freeBuild?'checked':''}></div><div class="line"><label for="auto-season">Adaptive seasons</label><input id="auto-season" type="checkbox" ${options.autoSeason?'checked':''}></div><p>Season changes respond to the habitat. They adjust weather and nutrient growth; they leave inherited brains and your force matrix alone.</p><div class="line"><label for="food-view">Show available food</label><input id="food-view" type="checkbox" ${options.showFood?'checked':''}></div><div class="line"><label for="brush-size">Brush size</label><output id="brush-value">${brush}</output></div><input id="brush-size" type="range" min="1" max="7" step="1" value="${brush}"><div class="line"><label for="mutation">Mutation</label><output id="mutation-value">${options.mutation.toFixed(2)}</output></div><input id="mutation" type="range" min="0" max=".5" step=".01" value="${options.mutation}"><div class="line"><label for="force">Interaction strength</label><output id="force-value">${options.force.toFixed(2)}</output></div><input id="force" type="range" min="0" max="3" step=".05" value="${options.force}"><div class="line"><label for="capacity">Population limit</label><select id="capacity">${[512,1024,2048,4096,8192].map(n=>`<option value="${n}" ${capacity===n?'selected':''}>${n.toLocaleString()}</option>`).join('')}</select></div><p>Existing creatures are preserved when the limit grows. Lowering it keeps a sample of the living population.</p><div class="separator"></div><div class="inspect-metrics"><div><span>OFFSPRING</span><b id="birth-count">${game.births}</b></div><div><span>DEEPEST GENERATION</span><b>${summary.highest|0}</b></div></div><p>Saves include terrain, food, water, creatures, neural memory, inherited traits, progress, and the simulation clock. Saves from the original XenoSpecies engine use a different format.</p>`;
+  $('#seed-description').textContent=`Seed: ${world.seed}`;
+  $('#new-world').onclick=()=>showWorldDialog();$('#download-world').onclick=()=>saveWorld(false);$('#local-save').onclick=()=>saveWorld(true);$('#local-load').onclick=()=>restoreLocal();$('#rain-world').onclick=()=>rainfall(true);$('#load-world').onclick=()=>$('#load-file').click();
+  for(const [id,key] of [['free-build','freeBuild'],['auto-season','autoSeason'],['food-view','showFood']])$('#'+id).onchange=e=>options[key]=e.target.checked;
+  $('#brush-size').oninput=e=>{brush=Number(e.target.value);$('#brush-value').value=brush;};
+  for(const key of ['mutation','force'])$('#'+key).oninput=e=>{options[key]=Number(e.target.value);$('#'+key+'-value').value=options[key].toFixed(2);};
+  $('#capacity').onchange=e=>changeCapacity(Number(e.target.value));
+ }
+}
+let pairSelection=0;
+function renderMatrix(updateSlider=true){
+ const g=$('#matrix-grid');if(!g)return;g.innerHTML='';
+ for(let a=0;a<6;a++)for(let b=0;b<6;b++){const v=matrix[a*6+b],button=document.createElement('button');button.className=a*6+b===pairSelection?'selected':'';button.title=`${FAMILIES[a].name} senses ${FAMILIES[b].name}: ${v.toFixed(2)}`;button.setAttribute('aria-label',button.title);button.textContent=v.toFixed(1);button.style.background=colorMix('#20303a',v>=0?'#83b68e':'#b58da7',Math.min(.75,Math.abs(v)*.6));button.onclick=()=>{pairSelection=a*6+b;renderMatrix();};g.appendChild(button);}
+ $('#pair-label').textContent=`${FAMILIES[Math.floor(pairSelection/6)].name} → ${FAMILIES[pairSelection%6].name}`;$('#pair-value').value=matrix[pairSelection].toFixed(2);if(updateSlider)$('#pair-slider').value=matrix[pairSelection];
+}
+function updateLifePanel(){
+ const list=$('#family-list');if(!list)return;
+ if(!list.children.length){for(let i=0;i<6;i++){const b=document.createElement('button');b.className='species-row';b.style.width='100%';b.style.textAlign='left';b.innerHTML=`<canvas class="species-portrait" width="38" height="34" aria-hidden="true"></canvas><span><b>${FAMILIES[i].name}</b><small id="family-desc-${i}">Generation 0</small></span><span class="species-count" id="family-count-${i}">0</span>`;b.onclick=()=>{selectedFamily=i;selectedParticle=-1;updateLifePanel();$('#release-selected').textContent=`Release ${FAMILIES[i].name} · 12 ✦`;};list.appendChild(b);const c=b.querySelector('canvas').getContext('2d');c.imageSmoothingEnabled=false;c.drawImage(sprites[i][0],3,1,32,32);}}
+ summary.stats.forEach((s,i)=>{$('#family-count-'+i).textContent=s.count;$('#family-desc-'+i).textContent=`Generation ${s.generation|0} · ${s.count?'established':'absent'}`;list.children[i].classList.toggle('active',selectedFamily===i);});
+ const s=summary.stats[selectedFamily];if(!s)return;let pi=selectedParticle;
+ if(pi<0||state[pi*32+4]<=0||state[pi*32+6]!==selectedFamily){pi=-1;let best=-1;for(let i=0;i<capacity;i++){if(state[i*32+6]===selectedFamily&&state[i*32+4]>best&&state[i*32+4]>0){pi=i;best=state[i*32+4];}}}
+ const specimen=$('#specimen');specimen.innerHTML=`<div class="eyebrow">${FAMILIES[selectedFamily].name}</div><p>${FAMILIES[selectedFamily].habitat}</p><div class="inspect-metrics"><div><span>ALIVE</span><b>${s.count}</b></div><div><span>MEAN ENERGY</span><b>${s.energy.toFixed(2)}</b></div><div><span>GENERATION</span><b>${s.generation|0}</b></div><div><span>IN THE DEEP</span><b>${s.deep}</b></div></div><p>${pi>=0?(selectedParticle>=0?'Selected creature':'Representative creature')+' · age '+Math.floor(state[pi*32+5])+' · generation '+Math.floor(state[pi*32+7]):'No living creature to inspect. Release this family to start again.'}</p>`;
+ drawBrainView(pi);
+}
+function drawBrainView(i){const canvas=$('#brain');if(!canvas)return;const c=canvas.getContext('2d');c.clearRect(0,0,296,130);if(i<0)return;const o=i*32,sp=state[o+6]|0,pts=Array.from({length:8},(_,j)=>({x:148+Math.cos(j/8*TAU)*85,y:65+Math.sin(j/8*TAU)*48}));
+ for(let a=0;a<8;a++)for(let b=0;b<8;b++){if(a===b)continue;const weight=brains[sp*236+128+a*8+b]*(1+state[o+16+4+(a+b)%12]*.35);if(Math.abs(weight)<.07)continue;c.strokeStyle=weight>0?'#9ee1b133':'#c49bb533';c.lineWidth=Math.min(2,Math.abs(weight)*3);c.beginPath();c.moveTo(pts[a].x,pts[a].y);c.lineTo(pts[b].x,pts[b].y);c.stroke();}
+ pts.forEach((p,j)=>{const v=state[o+8+j];c.fillStyle=colorMix('#324749',v>0?'#b0e4b1':'#ba9bdc',Math.abs(v));c.beginPath();c.arc(p.x,p.y,7+Math.abs(v)*3,0,TAU);c.fill();c.fillStyle='#e4e6d5';c.font='10px system-ui';c.textAlign='center';c.fillText(j+1,p.x,p.y+3);});}
+function updateJournal(){const q=$('#quests');if(!q)return;q.innerHTML=QUESTS.map(t=>{const v=Math.min(t.goal,Math.floor(t.value(game,summary))),done=completed.has(t.id);return`<div class="quest-row ${done?'completed':''}"><b>${done?'✓ ':''}${t.title}</b><p>${t.desc}</p><div class="track"><i style="width:${v/t.goal*100}%"></i></div><div class="mission-foot"><span>${v} / ${t.goal}</span><strong>${done?'Discovered':'+'+t.reward+' ✦'}</strong></div></div>`;}).join('');const events=$('#events');events.replaceChildren();for(const e of journal.slice(0,12)){const d=document.createElement('div');d.className='event';const b=document.createElement('b');b.textContent=`Day ${e.day} · `;d.append(b,document.createTextNode(e.message));events.append(d);}}
+function updateDiscoveries(){
+ for(const q of QUESTS){if(!completed.has(q.id)&&q.value(game,summary)>=q.goal){completed.add(q.id);essence+=q.reward;toast(`Discovery: ${q.title} · +${q.reward} ✦`);logEvent(q.title+' discovered.');}}
+ const q=QUESTS.find(t=>!completed.has(t.id));$('#discovery-count').textContent=`${completed.size} / ${QUESTS.length}`;
+ if(q){const val=Math.min(q.goal,Math.floor(q.value(game,summary)));$('#quest-num').textContent=String(QUESTS.indexOf(q)+1).padStart(2,'0');$('#quest-title').textContent=q.title;$('#quest-desc').textContent=q.desc;$('#quest-bar').style.width=`${val/q.goal*100}%`;$('#quest-progress').textContent=`${val} / ${q.goal}`;$('#quest-reward').textContent=`+${q.reward} ✦`;}
+ else{$('#quest-num').textContent='COMPLETE';$('#quest-title').textContent='Keep wondering.';$('#quest-desc').textContent='Every discovery is yours. Sculpt a new niche, introduce a family, or watch another generation.';$('#quest-bar').style.width='100%';$('#quest-progress').textContent='8 discoveries';$('#quest-reward').textContent='✦';}
+}
+function updateHUD(){
+ $('#habitat-name').textContent=BIOMES[world.biome].name;$('#day').textContent=Math.floor(simTime/110)+1;$('#alive').textContent=summary.count.toLocaleString();$('#essence').textContent=options.freeBuild?'✦ Free build':`✦ ${Math.floor(essence)}`;
+ const phase=(simTime/110+.2)%1;const timeName=phase<.13?'First light':phase<.42?'Sunlit hours':phase<.58?'Evening glow':'Moonlight';$('#season').textContent=`${timeName} · ${simTime<rainUntil?'rainfall':weatherName}`;
+ $('#engine').textContent=`${engine?.name||'Preparing'} · ${summary.count.toLocaleString()} living · ${game.births} offspring`;
+ $('#pause').textContent=paused?'▶':'Ⅱ';$('#pause').setAttribute('aria-label',paused?'Resume':'Pause');$('#speed').textContent=speed+'×';updateDiscoveries();
+ if(drawerTab==='life')updateLifePanel();if(drawerTab==='journal')updateJournal();
+}
+async function takeSnapshot(){const snap=await engine.read(true);state=snap.particles;world.food.set(snap.food);game.births=counterBase.births+snap.counters[0];game.deaths=counterBase.deaths+snap.counters[1];lastCounters=Array.from(snap.counters);summary=aggregate(state);return snap;}
+async function edit(fn){if(mutating||busy)return false;mutating=true;saveSerial++;try{await takeSnapshot();await fn();summary=aggregate(state);floraDirty=true;updateHUD();return true;}catch(e){console.error(e);toast('That change could not be applied: '+e.message);return false;}finally{mutating=false;}}
+const editQueue=[];
+function plantAt(pos,type,foodIDs){
+ const x=clamp(Math.floor(pos.x/8),2,237);let y=clamp(Math.floor(pos.y/8),3,123);if(world.tiles[y*240+x]){while(y>2&&world.tiles[y*240+x])y--;}
+ let base=y;while(base<124&&!world.tiles[(base+1)*240+x]&&base-y<20)base++;if(!world.tiles[(base+1)*240+x])base=y;
+ if(world.plants.some(p=>Math.hypot(p.x-(x*8+4),p.y-(base+1)*8)<13)){return false;}
+ if(world.plants.length>=4500){toast('This garden has room for 4,500 plants.');return false;}
+ if(!cost(type==='glow'?8:3))return false;
+ const cave=base>world.surface[x]+5;world.plants.push({x:x*8+4,y:(base+1)*8,type:type==='glow'?'crystal':cave?'mushroom':'fern',size:type==='glow'?26:18+(hash32(tick+base*240+x)%10),seed:hash32(tick+x*113+base),planted:true});
+ game.planted++;if(cave)game.cavePlants++;if(type==='glow')game.crystals++;
+ for(let yy=Math.max(1,base-5);yy<=Math.min(125,base+1);yy++)for(let xx=x-5;xx<=x+5;xx++){if(xx<1||xx>238)continue;const i=yy*240+xx;if(!world.tiles[i])foodIDs.add(i);}return true;
+}
+function releaseLife(pos){
+ const i=tileIndex(pos.x,pos.y);if(world.tiles[i]){toast('Choose an open space.');return false;}if(selectedFamily===2&&world.water[i]<.1){toast('Tidefins need a pool. Use the water tool first.');return false;}
+ const slots=[];for(let k=0;k<capacity&&slots.length<12;k++)if(state[k*32+4]<=0)slots.push(k);if(!slots.length){toast('The habitat is at its population limit.');return false;}if(!cost(12))return false;
+ const r=rng(hash32(tick+game.seeded*721+selectedFamily*17));for(const k of slots){const o=k*32;state.fill(0,o,o+32);state[o]=clamp(pos.x+(r()-.5)*12,10,1908);state[o+1]=clamp(pos.y+(r()-.5)*10,16,1004);if(world.tiles[tileIndex(state[o],state[o+1])]){state[o]=pos.x;state[o+1]=pos.y;}state[o+4]=1.3+r()*.3;state[o+6]=selectedFamily;for(let j=0;j<16;j++)state[o+16+j]=(r()-.5)*.8;}
+ game.seeded+=slots.length;logEvent(`${slots.length} ${FAMILIES[selectedFamily].name} introduced.`);toast(`${FAMILIES[selectedFamily].name} released.`);return true;
+}
+async function processEdits(){
+ if(!editQueue.length||busy||mutating)return;const batch=editQueue.splice(0,80);
+ await edit(async()=>{
+  const foodIDs=new Set();let changed=false,particlesChanged=false,waterChanged=false;
+  for(const e of batch){const {id,pos,first}=e;if(pos.x<8||pos.x>1911||pos.y<16||pos.y>1000)continue;
+   if(id==='dig'||id==='soil'){
+    const cx=Math.floor(pos.x/8),cy=Math.floor(pos.y/8),rad=e.brush;
+    for(let y=Math.max(2,cy-rad);y<=Math.min(124,cy+rad);y++)for(let x=Math.max(1,cx-rad);x<=Math.min(238,cx+rad);x++){
+     if(Math.hypot(x-cx,y-cy)>rad)continue;const i=y*240+x;
+     if(id==='dig'&&world.tiles[i]){world.tiles[i]=0;game.dug++;changed=true;}
+     if(id==='soil'&&!world.tiles[i]){world.tiles[i]=1;world.water[i]=0;world.food[i]=0;foodIDs.add(i);changed=true;}
+    }
+   }else if(id==='moss'||id==='glow'){if(plantAt(pos,id,foodIDs))changed=true;}
+   else if(id==='water'){
+    if(world.tiles[tileIndex(pos.x,pos.y)])continue;if(!cost(5))continue;const cx=Math.floor(pos.x/8),cy=Math.floor(pos.y/8);
+    for(let y=Math.max(1,cy-2);y<=Math.min(123,cy+2);y++)for(let x=Math.max(1,cx-3);x<=Math.min(238,cx+3);x++){let i=y*240+x;if(!world.tiles[i])world.water[i]=1;}
+    changed=true;waterChanged=true;
+   }else if(id==='seed'){if(releaseLife(pos))particlesChanged=true;}
+   else if(id==='mutate'){
+    const ids=[];for(let i=0;i<capacity;i++){let o=i*32;if(state[o+4]>0&&Math.hypot(state[o]-pos.x,state[o+1]-pos.y)<48)ids.push(i);}if(!ids.length){toast('Bring the mutation brush closer to a creature.');continue;}if(!cost(10))continue;
+    for(const i of ids){let o=i*32;for(let j=0;j<16;j++)state[o+16+j]=clamp(state[o+16+j]+(hash32((tick+i*999+j*111)>>>0)/4294967295-.5)*.55,-1.5,1.5);}
+    particlesChanged=true;toast(`Variation introduced to ${ids.length} creatures.`);logEvent(`Mutation brush affected ${ids.length} creatures.`);
+   }
+  }
+  if(changed){world.plants=world.plants.filter(p=>!world.tiles[tileIndex(p.x,p.y-5)]);settleWater(world,waterChanged?12:4);rebuildFields(world,false);for(const i of foodIDs)world.food[i]=world.tiles[i]?0:Math.floor(Math.min(12000,Math.max(world.food[i],world.cap[i]*.75)));engine.paintFood(world,foodIDs);terrainDirty=true;floraDirty=true;minimapDirty=true;}
+  if(particlesChanged)await engine.replace(state,world,false);
+ });
+}
+async function rainfall(manual=true){if(manual&&essence<10&&!options.freeBuild){cost(10);return;}
+ await edit(async()=>{if(manual&&!cost(10))return;rainUntil=simTime+18;weatherName='freshly watered';game.rain++;const ids=new Set();for(let i=0;i<CELLS;i++)if(!world.tiles[i]&&world.cap[i]>0){world.food[i]=Math.min(12000,world.food[i]+900);ids.add(i);}engine.paintFood(world,ids);logEvent(manual?'A rainfall was brought to the garden.':'Adaptive season: a restorative rainfall.');toast(manual?'Rain returns to the hollow.':'The habitat needs water. A gentle rain arrives.');});
+}
+function director(){
+ if(!options.autoSeason||simTime<directorAt)return;directorAt=simTime+40;
+ const fraction=summary.count/capacity,liveFamilies=summary.stats.filter(s=>s.count>0).length;
+ if(fraction<.3||liveFamilies<4){options.fertility=1.2;rainfall(false);}
+ else if(fraction>.78&&simTime>70){options.fertility=.85;weatherName='dry season';logEvent('Adaptive season: a mild dry spell.');toast('A dry season arrives. The sheltered gardens keep their water.');}
+ else{options.fertility=1;weatherName='gentle breeze';}
+}
+async function changeCapacity(n){await edit(async()=>{const live=[];for(let i=0;i<capacity;i++)if(state[i*32+4]>0)live.push(i);const next=spawnState(world,n);for(let o=0;o<next.length;o+=32)next[o+4]=0;for(let i=0;i<Math.min(n,live.length);i++){const src=live[Math.floor(i*live.length/Math.min(n,live.length))]*32;next.set(state.subarray(src,src+32),i*32);}const old=engine;counterBase={births:game.births,deaths:game.deaths};capacity=n;state=next;engine=await makeEngine(world,state);await old.close();toast(`Population limit: ${n.toLocaleString()}.`);});}
+function showWorldDialog(){pendingBiome=world.biome;$('#seed').value=world.seed;renderBiomeChoices();$('#world-dialog').showModal();}
+function renderBiomeChoices(){const list=$('#world-choices');list.replaceChildren();for(const [id,b] of Object.entries(BIOMES)){const btn=document.createElement('button');btn.className='world-choice'+(pendingBiome===id?' selected':'');btn.setAttribute('aria-pressed',String(pendingBiome===id));btn.innerHTML=`<b>${b.name}</b><small>${b.description}</small>`;btn.onclick=()=>{pendingBiome=id;renderBiomeChoices();};list.appendChild(btn);}}
+function snapshotObject(){return{format:'xenogarden',version:1,savedAt:new Date().toISOString(),capacity,world:{seed:world.seed,biome:world.biome,tiles:Array.from(world.tiles),water:Array.from(world.water),food:Array.from(world.food),plants:world.plants,trees:world.trees},particles:Array.from(state),brains:Array.from(brains),matrix:Array.from(matrix),simTime,tick,options:{...options},game:{...game},essence,completed:Array.from(completed),journal,camera:{...camera},speed,paused,selectedFamily,rainUntil,directorAt,weatherName};}
+function downloadJSON(data,name){const blob=new Blob([JSON.stringify(data)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);}
+async function saveWorld(local=false){await edit(async()=>{const obj=snapshotObject();if(local){try{localStorage.setItem('xenogarden-save-v1',JSON.stringify(obj));toast('Your terrarium is saved on this device.');}catch{toast('Device storage is full. Download a save file instead.');}}else{downloadJSON(obj,'xenogarden-save.json');toast('The whole terrarium is in your save file.');}});}
+async function restoreLocal(){try{const text=localStorage.getItem('xenogarden-save-v1');if(!text){toast('No terrarium has been saved on this device yet.');return;}await loadWorld(JSON.parse(text));}catch(e){toast(e.message);}}
+async function loadWorld(data){
+ validateSave(data);if(busy||mutating)return;busy=true;saveSerial++;
+ try{
+  const previous=engine;const w=makeWorld(data.world.seed,data.world.biome);w.tiles.set(data.world.tiles);w.water.set(data.world.water);w.plants=data.world.plants;w.trees=data.world.trees;rebuildFields(w,false);w.food.set(data.world.food);
+  capacity=data.capacity;world=w;state=new Float32Array(data.particles);brains=new Float32Array(data.brains);matrix=new Float32Array(data.matrix);
+  for(const k of Object.keys(options)){if(typeof data.options?.[k]===typeof options[k]&&(typeof options[k]!=='number'||Number.isFinite(data.options[k])))options[k]=data.options[k];}options.mutation=clamp(options.mutation,0,.5);options.force=clamp(options.force,0,3);options.fertility=clamp(options.fertility,.5,1.5);
+  game=baseStats();for(const k of Object.keys(game))if(Number.isFinite(data.game?.[k]))game[k]=Math.max(0,data.game[k]);essence=clamp(Number.isFinite(data.essence)?data.essence:120,0,1000000);
+  completed=new Set(Array.isArray(data.completed)?data.completed.filter(id=>QUESTS.some(q=>q.id===id)):[]);journal=Array.isArray(data.journal)?data.journal.filter(e=>Number.isFinite(e.day)&&typeof e.message==='string').slice(0,60):[];
+  simTime=clamp(Number.isFinite(data.simTime)?data.simTime:0,0,10000000);tick=clamp(Number.isFinite(data.tick)?data.tick:0,0,16000000)|0;rainUntil=clamp(Number.isFinite(data.rainUntil)?data.rainUntil:0,0,simTime+60);directorAt=clamp(Number.isFinite(data.directorAt)?data.directorAt:simTime+25,0,simTime+120);weatherName=typeof data.weatherName==='string'?data.weatherName.slice(0,50):'restored habitat';speed=[1,2,4].includes(data.speed)?data.speed:1;paused=!!data.paused;selectedFamily=clamp(data.selectedFamily|0,0,5);selectedParticle=-1;counterBase={births:game.births,deaths:game.deaths};
+  engine=await makeEngine(world,state);if(previous)await previous.close();summary=aggregate(state);terrainDirty=floraDirty=minimapDirty=true;skyLayer=floraLayer=terrainLayer=null;editQueue.length=0;
+  if(data.camera&&[data.camera.x,data.camera.y,data.camera.zoom].every(Number.isFinite)){camera={...data.camera};constrainCamera();cameraMoved=true;}else fitWorld();if(drawerTab)renderDrawer();updateHUD();toast('Your terrarium is back, right where you left it.');
+ }finally{busy=false;accum=0;}
+}
+let pointers=new Map(),gesture=null,lastPaint=null,paintBlocked=false;
+function enqueuePaint(p,first=false){if(first){paintBlocked=tool==='soil'&&!cost(1);}if(paintBlocked)return;const continuous=['dig','soil','moss','water','glow'].includes(tool);if(!first&&!continuous)return;const spacing=tool==='dig'||tool==='soil'?brush*5:tool==='water'?35:30;
+ if(lastPaint&&!first&&Math.hypot(p.x-lastPaint.x,p.y-lastPaint.y)<spacing)return;
+ if(lastPaint&&!first&&(tool==='dig'||tool==='soil')){const d=Math.hypot(p.x-lastPaint.x,p.y-lastPaint.y),steps=Math.min(30,Math.ceil(d/Math.max(5,brush*4)));for(let k=1;k<steps;k++)editQueue.push({id:tool,pos:{x:lerp(lastPaint.x,p.x,k/steps),y:lerp(lastPaint.y,p.y,k/steps)},first:false,brush});}
+ editQueue.push({id:tool,pos:p,first,brush});lastPaint=p;
+}
+function inspectAt(p){let best=-1,dist=Math.max(14,14/camera.zoom);for(let i=0;i<capacity;i++){const o=i*32;if(state[o+4]<=0)continue;const d=Math.hypot(state[o]-p.x,state[o+1]-p.y);if(d<dist){dist=d;best=i;}}if(best>=0){selectedParticle=best;selectedFamily=state[best*32+6]|0;openDrawer('life');}}
+function initControls(){
+ $('#tools').innerHTML=TOOLS.map(t=>`<button class="tool" data-tool="${t.id}" aria-pressed="${t.id==='hand'}" title="${t.hint}"><kbd>${t.key}</kbd><span class="sym" aria-hidden="true">${t.sym}</span><span>${t.name}</span></button>`).join('');$('#tools').querySelectorAll('button').forEach(b=>b.onclick=()=>setTool(b.dataset.tool));
+ $('#pause').onclick=()=>{paused=!paused;updateHUD();};$('#speed').onclick=()=>{speed=speed===1?2:speed===2?4:1;updateHUD();};$('#lab-btn').onclick=()=>drawerTab==='life'?closeDrawer():openDrawer('life');$('#world-btn').onclick=()=>drawerTab==='world'?closeDrawer():openDrawer('world');$('#journal-btn').onclick=()=>drawerTab==='journal'?closeDrawer():openDrawer('journal');$('#drawer-close').onclick=closeDrawer;
+ $('#help-btn').onclick=()=>$('#help').showModal();$('#help-close').onclick=()=>$('#help').close();$('#weather-btn').onclick=()=>rainfall(true);$('#fit-btn').onclick=fitWorld;$('#view-btn').onclick=()=>document.body.classList.toggle('quiet-ui');$('#world-cancel').onclick=()=>$('#world-dialog').close();
+ $('#world-create').onclick=async()=>{const seed=$('#seed').value.trim()||'moss-and-moonlight';$('#world-dialog').close();await newWorld(seed,pendingBiome);};
+ $('#load-file').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{if(f.size>12*1024*1024)throw Error('Please choose a save file smaller than 12 MB.');await loadWorld(JSON.parse(await f.text()));}catch(err){toast(err.message);}finally{e.target.value='';}};
+ canvas.addEventListener('pointerdown',e=>{if(e.button!==0&&e.button!==1&&e.button!==2)return;e.preventDefault();canvas.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});lastPaint=null;
+  if(pointers.size===2){const pts=Array.from(pointers.values());gesture={pinch:true,distance:Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y),zoom:camera.zoom,center:toWorld((pts[0].x+pts[1].x)/2,(pts[0].y+pts[1].y)/2)};return;}
+  gesture={x:e.clientX,y:e.clientY,camX:camera.x,camY:camera.y,pan:tool==='hand'||e.button!==0||e.shiftKey,moved:false};if(!gesture.pan)enqueuePaint(toWorld(e.clientX,e.clientY),true);
+ });
+ canvas.addEventListener('pointermove',e=>{hover=toWorld(e.clientX,e.clientY);if(!pointers.has(e.pointerId))return;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(!gesture)return;
+  if(pointers.size>=2&&gesture.pinch){const pts=Array.from(pointers.values()),d=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);camera.zoom=gesture.zoom*d/Math.max(1,gesture.distance);constrainCamera();const mx=(pts[0].x+pts[1].x)/2,my=(pts[0].y+pts[1].y)/2;camera.x=gesture.center.x-(mx-screenW/2)/camera.zoom;camera.y=gesture.center.y-(my-screenH/2)/camera.zoom;cameraMoved=true;return;}
+  if(gesture.pinch)return;if(Math.hypot(e.clientX-gesture.x,e.clientY-gesture.y)>4)gesture.moved=true;
+  if(gesture.pan){camera.x=gesture.camX-(e.clientX-gesture.x)/camera.zoom;camera.y=gesture.camY-(e.clientY-gesture.y)/camera.zoom;cameraMoved=true;constrainCamera();}else enqueuePaint(hover,false);
+ });
+ const up=e=>{if(gesture&&!gesture.moved&&!gesture.pinch&&gesture.pan&&tool==='hand')inspectAt(toWorld(e.clientX,e.clientY));pointers.delete(e.pointerId);if(!pointers.size){gesture=null;lastPaint=null;}};canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',e=>{pointers.delete(e.pointerId);gesture=null;lastPaint=null;});canvas.addEventListener('pointerleave',()=>{hover=null;});canvas.addEventListener('contextmenu',e=>e.preventDefault());
+ canvas.addEventListener('wheel',e=>{e.preventDefault();const p=toWorld(e.clientX,e.clientY);camera.zoom*=Math.exp(-e.deltaY*.0012);constrainCamera();camera.x=p.x-(e.clientX-screenW/2)/camera.zoom;camera.y=p.y-(e.clientY-screenH/2)/camera.zoom;cameraMoved=true;},{passive:false});
+ mapCanvas.onclick=e=>{const r=mapCanvas.getBoundingClientRect();camera.x=(e.clientX-r.left)/r.width*1920;camera.y=(e.clientY-r.top)/r.height*1024;cameraMoved=true;};
+ document.addEventListener('keydown',e=>{if(e.target.matches('input,select,textarea')||document.querySelector('dialog[open]'))return;const key=e.key.toLowerCase();if([' ','w','a','s','d','arrowup','arrowleft','arrowdown','arrowright'].includes(key))e.preventDefault();keys.add(key);if(e.repeat)return;if(key===' '){paused=!paused;updateHUD();}else if(key==='f')fitWorld();else if(key==='h')document.body.classList.toggle('quiet-ui');else if(key==='escape')closeDrawer();else if(/^[1-8]$/.test(key))setTool(TOOLS[Number(key)-1].id);});document.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>{keys.clear();pointers.clear();gesture=null;});window.addEventListener('resize',resize);
+}
+/* LIFECYCLE_SECTION */
+async function newWorld(seed,biome,initial=false){
+ if((busy||mutating)&&!initial)return;busy=true;saveSerial++;
+ try{const old=engine;world=makeWorld(seed,biome);brains=createBrains(seed);matrix=createMatrix();state=spawnState(world,capacity);engine=await makeEngine(world,state);if(initial&&engine.name==='Compatibility'&&capacity>512){await engine.close();capacity=512;state=spawnState(world,capacity);engine=await new CPUEcology().init(world,state,brains,matrix);}if(old)await old.close();
+  game=baseStats();counterBase={births:0,deaths:0};lastCounters=[0,0];essence=120;completed=new Set();journal=[];simTime=0;tick=0;rainUntil=0;directorAt=35;weatherName='calm';summary=aggregate(state);selectedParticle=-1;selectedFamily=0;options.fertility=1;terrainLayer=floraLayer=skyLayer=null;terrainDirty=floraDirty=minimapDirty=true;editQueue.length=0;paused=false;fitWorld();closeDrawer();logEvent('A new habitat. Six founder families find their footing.');snapshotTime=performance.now();updateHUD();if(!initial)toast('A new world, a new possibility.');
+ }finally{busy=false;accum=0;}
+}
+let reading=false,readDue=0,environmentDue=0;
+function loop(now){
+ const elapsed=Math.min(.08,(now-lastFrame)/1000||0);lastFrame=now;
+ if(world){
+  const pan=elapsed*440/camera.zoom;let dx=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),dy=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);if(dx||dy){camera.x+=dx*pan;camera.y+=dy*pan;cameraMoved=true;constrainCamera();}
+  if(!paused&&!busy&&!mutating&&!document.hidden){accum+=elapsed*30*speed;let loops=0;const maxTicks=engine.name==='WebGPU'?8:4;while(accum>=1&&loops++<maxTicks){engine.step(params());simTime+=CFG.step;tick=(tick+1)%16000000;game.seconds+=CFG.step;essence=Math.min(9999,essence+CFG.step*.18);accum--;}
+   if(accum>8)accum=8;director();
+  }else accum=0;
+  if(!busy&&!mutating&&editQueue.length)processEdits();
+  if(now>readDue&&!reading&&!busy&&!mutating){reading=true;readDue=now+160;syncSnapshot().finally(()=>reading=false);}
+  if(now-lastUI>550&&!busy){updateHUD();lastUI=now;}
+  render(now);
+ }
+ requestAnimationFrame(loop);
+}
+async function start(){
+ try{makeSprites();initControls();resize();if(innerWidth<720)capacity=1024;await newWorld('moss-and-moonlight','hollow',true);$('#boot').remove();requestAnimationFrame(loop);}
+ catch(error){console.error(error);$('#boot-status').textContent='The garden could not start: '+error.message;const b=document.createElement('button');b.textContent='Try again';b.onclick=()=>location.reload();$('.boot-inner').appendChild(b);}
+}
+start();
+/* APP_END */
+</script>
+</body></html>
